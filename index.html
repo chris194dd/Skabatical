@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-    /* ── THEME VARIABLES ─────────────────────────────────────────── */
     :root {
         --green: #4CAF73;
         --amber: #E8A838;
@@ -27,7 +26,6 @@
         --text: #EDF2EE;
         --text2: rgba(237, 242, 238, 0.5);
         --text3: rgba(237, 242, 238, 0.25);
-        --map-tiles: dark_all;
     }
 
     [data-theme="light"] {
@@ -39,7 +37,6 @@
         --text: #1A150E;
         --text2: rgba(26, 21, 14, 0.5);
         --text3: rgba(26, 21, 14, 0.25);
-        --map-tiles: light_all;
     }
 
     * {
@@ -62,14 +59,6 @@
         margin: 0 auto;
         min-height: 100vh;
         transition: background .2s, color .2s
-    }/* THEME TOGGLE */
-    .theme-toggle {
-        background: none;
-        border: none;
-        font-size: 18px;
-        cursor: pointer;
-        padding: 4px;
-        color: var(--text2)
     }/* SCREENS */
     .screen {
         display: none;
@@ -226,7 +215,7 @@
     }
 
     .topbar {
-        padding: 12px 18px 10px;
+        padding: 12px 14px 10px;
         background: var(--bg2);
         border-bottom: 1px solid var(--border);
         position: sticky;
@@ -255,7 +244,7 @@
     .topbar-right {
         display: flex;
         align-items: center;
-        gap: 6px
+        gap: 5px
     }
 
     .icon-btn {
@@ -269,7 +258,41 @@
         cursor: pointer;
         display: flex;
         align-items: center;
-        justify-content: center
+        justify-content: center;
+        transition: transform .15s
+    }
+
+    .icon-btn:active {
+        transform: scale(.88)
+    }
+
+    .icon-btn.spinning {
+        animation: spin .6s linear
+    }
+
+    @keyframes spin {
+        from {
+            transform:rotate(0)
+        }
+
+        to {
+            transform: rotate(360deg)
+        }
+    }
+
+    .offline-banner {
+        background: rgba(224, 85, 85, .15);
+        border-bottom: 1px solid rgba(224, 85, 85, .3);
+        padding: 4px 18px;
+        font-size: 11px;
+        color: var(--red);
+        display: none;
+        align-items: center;
+        gap: 6px
+    }
+
+    .offline-banner.show {
+        display: flex
     }
 
     .fx-strip {
@@ -302,7 +325,8 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 2px
+        gap: 2px;
+        transition: all .15s
     }
 
     .nav-btn .ni {
@@ -358,7 +382,8 @@
         font-weight: 900;
         line-height: 1;
         letter-spacing: -2px;
-        color: var(--green)
+        color: var(--green);
+        transition: color .3s
     }
 
     .hero-remaining.warn {
@@ -402,6 +427,11 @@
     .pill-warn {
         background: rgba(232, 168, 56, .15);
         color: var(--amber)
+    }
+
+    .pill-bad {
+        background: rgba(224, 85, 85, .15);
+        color: var(--red)
     }/* BARS */
     .bar-section {
         margin: 14px 0 4px
@@ -432,7 +462,7 @@
     .bar-fill {
         height: 100%;
         border-radius: 99px;
-        transition: width .6s cubic-bezier(.4, 0, .2, 1)
+        transition: width .7s cubic-bezier(.4, 0, .2, 1)
     }
 
     .fill-time {
@@ -484,7 +514,8 @@
     .mini-num {
         font-family: 'Fraunces', serif;
         font-size: 21px;
-        font-weight: 700
+        font-weight: 700;
+        transition: color .3s
     }
 
     .mini-lbl {
@@ -516,7 +547,8 @@
     .day-budget-card .right {
         font-family: 'Fraunces', serif;
         font-size: 24px;
-        font-weight: 700
+        font-weight: 700;
+        transition: color .3s
     }
 
     .day-budget-card .right.over {
@@ -550,6 +582,15 @@
         font-size: 11px;
         color: var(--text2);
         margin-top: 2px
+    }/* CATEGORY BADGE */
+    .cat-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 500
     }
 
     .cat-bar-row {
@@ -559,6 +600,7 @@
     .cat-bar-header {
         display: flex;
         justify-content: space-between;
+        align-items: center;
         font-size: 12px;
         margin-bottom: 4px
     }
@@ -570,13 +612,99 @@
     .cat-bar-header span {
         color: var(--text2);
         font-size: 11px
+    }/* PIE CHART */
+    .chart-wrap {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px
+    }
+
+    .pie-svg {
+        flex-shrink: 0
+    }
+
+    .legend {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px
+    }
+
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0
+    }
+
+    .legend-name {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap
+    }
+
+    .legend-val {
+        font-weight: 600;
+        font-size: 11px
+    }/* DAY GROUPS */
+    .day-group-header {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: var(--text3);
+        padding: 10px 0 6px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center
+    }
+
+    .day-group-total {
+        font-family: 'Fraunces', serif;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--amber)
     }/* TRANSACTIONS */
+    .tx-wrap {
+        position: relative;
+        overflow: hidden;
+        border-radius: var(--r-sm);
+        margin-bottom: 2px
+    }
+
+    .tx-swipe-bg {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 80px;
+        background: var(--red);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        border-radius: var(--r-sm)
+    }
+
     .tx {
         display: flex;
         align-items: center;
         gap: 10px;
         padding: 10px 0;
-        border-bottom: 1px solid var(--border)
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+        transition: transform .2s;
+        position: relative;
+        touch-action: pan-y
     }
 
     .tx:last-child {
@@ -587,11 +715,10 @@
         width: 38px;
         height: 38px;
         border-radius: var(--r-sm);
-        background: var(--surface2);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 19px;
+        font-size: 18px;
         flex-shrink: 0
     }
 
@@ -611,7 +738,11 @@
     .tx-meta {
         font-size: 11px;
         color: var(--text2);
-        margin-top: 2px
+        margin-top: 2px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        flex-wrap: wrap
     }
 
     .tx-right {
@@ -653,15 +784,72 @@
     .edited-tag {
         font-size: 9px;
         color: var(--text3);
-        margin-left: 5px;
         background: var(--surface2);
         padding: 1px 5px;
         border-radius: 4px
+    }/* CAT COLORS */
+    .c-restaurant {
+        background: rgba(232, 108, 56, .15);
+        color: #E86C38
+    }
+
+    .c-grocery {
+        background: rgba(76, 175, 115, .15);
+        color: #4CAF73
+    }
+
+    .c-camping {
+        background: rgba(61, 168, 190, .15);
+        color: #3DA8BE
+    }
+
+    .c-camper {
+        background: rgba(168, 132, 61, .15);
+        color: #A8843D
+    }
+
+    .c-fuel {
+        background: rgba(224, 85, 85, .15);
+        color: #E05555
+    }
+
+    .c-ferry {
+        background: rgba(61, 100, 190, .15);
+        color: #3D64BE
+    }
+
+    .c-act {
+        background: rgba(168, 61, 190, .15);
+        color: #A83DBE
+    }
+
+    .c-museum {
+        background: rgba(190, 150, 61, .15);
+        color: #BE963D
+    }
+
+    .c-dog {
+        background: rgba(190, 120, 61, .15);
+        color: #BE783D
+    }
+
+    .c-health {
+        background: rgba(61, 190, 150, .15);
+        color: #3DBE96
+    }
+
+    .c-shop {
+        background: rgba(190, 61, 120, .15);
+        color: #BE3D78
+    }
+
+    .c-misc {
+        background: rgba(140, 140, 140, .15);
+        color: #8C8C8C
     }/* ROUTE */
     #route-map {
         height: 260px;
         border-radius: var(--r-sm);
-        margin-bottom: 12px;
         background: var(--surface2);
         z-index: 1
     }
@@ -764,6 +952,43 @@
 
     .gps-btn:disabled {
         opacity: .5
+    }/* AUTOCOMPLETE */
+    .autocomplete-wrap {
+        position: relative;
+        flex: 1
+    }
+
+    .autocomplete-list {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-sm);
+        z-index: 100;
+        max-height: 180px;
+        overflow-y: auto;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, .3)
+    }
+
+    .autocomplete-item {
+        padding: 10px 14px;
+        font-size: 13px;
+        cursor: pointer;
+        border-bottom: 1px solid var(--border)
+    }
+
+    .autocomplete-item:last-child {
+        border-bottom: none
+    }
+
+    .autocomplete-item:hover, .autocomplete-item:active {
+        background: var(--surface2)
+    }
+
+    .autocomplete-item b {
+        color: var(--green)
     }/* STOP LIST */
     .stop-item {
         display: flex;
@@ -820,8 +1045,8 @@
     }
 
     .seg-ferry {
-        background: rgba(61, 168, 190, .15);
-        color: var(--blue)
+        background: rgba(61, 100, 190, .15);
+        color: #3D64BE
     }
 
     .seg-start {
@@ -847,10 +1072,53 @@
 
     .stop-actions {
         display: flex;
-        flex-direction: column;
-        gap: 2px;
+        gap: 4px;
         flex-shrink: 0
-    }/* EDIT MODAL */
+    }/* CURRENCY TABLE */
+    .fx-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px
+    }
+
+    .fx-table th {
+        text-align: left;
+        padding: 7px 10px;
+        font-size: 10px;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: var(--text3);
+        font-weight: 600;
+        border-bottom: 1px solid var(--border)
+    }
+
+    .fx-table td {
+        padding: 9px 10px;
+        border-bottom: 1px solid var(--border)
+    }
+
+    .fx-table tr:last-child td {
+        border-bottom: none
+    }
+
+    .fx-table .flag {
+        font-size: 18px;
+        width: 28px
+    }
+
+    .fx-table .rate {
+        font-family: 'Fraunces', serif;
+        font-size: 15px;
+        font-weight: 700;
+        text-align: right
+    }
+
+    .fx-updated {
+        font-size: 10px;
+        color: var(--text3);
+        margin-top: 6px;
+        text-align: right
+    }/* MODAL */
     .modal-overlay {
         position: fixed;
         inset: 0;
@@ -920,6 +1188,19 @@
         border-color: var(--green)
     }
 
+    .form-sel {
+        width: 100%;
+        padding: 10px 13px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--r-sm);
+        color: var(--text);
+        font-family: 'Instrument Sans', sans-serif;
+        font-size: 14px;
+        outline: none;
+        -webkit-appearance: none
+    }
+
     .form-2col {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -983,6 +1264,19 @@
         margin-top: 7px
     }
 
+    .export-btn {
+        width: 100%;
+        padding: 11px;
+        background: none;
+        color: var(--blue);
+        border: 1px solid rgba(61, 168, 190, .3);
+        border-radius: var(--r-sm);
+        font-family: 'Instrument Sans', sans-serif;
+        font-size: 13px;
+        cursor: pointer;
+        margin-top: 7px
+    }
+
     .daily-display {
         font-size: 12px;
         color: var(--green);
@@ -1023,6 +1317,16 @@
         font-size: 12px;
         padding: 7px 12px;
         cursor: pointer
+    }
+
+    .form-lbl-full {
+        font-size: 11px;
+        letter-spacing: .07em;
+        text-transform: uppercase;
+        color: var(--text3);
+        margin-bottom: 4px;
+        display: block;
+        margin-top: 11px
     }/* QUICK ADD */
     .qa-bar {
         position: fixed;
@@ -1107,7 +1411,8 @@
         flex-shrink: 0;
         display: flex;
         align-items: center;
-        justify-content: center
+        justify-content: center;
+        transition: transform .1s
     }
 
     .qa-add-btn:active {
@@ -1140,7 +1445,20 @@
     }
 
     .empty p {
-        font-size: 13px
+        font-size: 13px;
+        margin-bottom: 12px
+    }
+
+    .empty-action {
+        background: var(--green);
+        color: #0F1A14;
+        border: none;
+        border-radius: var(--r-sm);
+        padding: 9px 18px;
+        font-family: 'Instrument Sans', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer
     }
 
     .toast {
@@ -1186,9 +1504,6 @@
             transform: translateY(110vh) rotate(800deg);
             opacity: 0
         }
-    }/* Leaflet dark/light map swap */
-    [data-theme="light"] .leaflet-tile-pane {
-        filter: none
     }
     </style>
 
@@ -1271,6 +1586,7 @@
         name: 'Sonstiges'
     },
     ];
+    const CAT_COLORS = ['#E86C38', '#4CAF73', '#3DA8BE', '#A8843D', '#E05555', '#3D64BE', '#A83DBE', '#BE963D', '#BE783D', '#3DBE96', '#BE3D78', '#8C8C8C'];
 
     // ── FX ────────────────────────────────────────────────────────────
     let FX = {
@@ -1279,6 +1595,45 @@
         NOK: 11.8,
         SEK: 11.3
     };
+    let fxUpdatedAt = null;
+
+    // Currency detected from GPS country code
+    const COUNTRY_CURRENCY = {
+        DK: {
+            code: 'DKK',
+            flag: '🇩🇰',
+            name: 'Dänische Krone'
+        },
+        NO: {
+            code: 'NOK',
+            flag: '🇳🇴',
+            name: 'Norwegische Krone'
+        },
+        SE: {
+            code: 'SEK',
+            flag: '🇸🇪',
+            name: 'Schwedische Krone'
+        },
+    };
+    const ALL_CURRENCIES = [
+    {
+        code: 'DKK',
+        flag: '🇩🇰',
+        name: 'Dänische Krone'
+    },
+    {
+        code: 'NOK',
+        flag: '🇳🇴',
+        name: 'Norwegische Krone'
+    },
+    {
+        code: 'SEK',
+        flag: '🇸🇪',
+        name: 'Schwedische Krone'
+    },
+    ];
+    let sessionCurrency = null; // set by GPS detection
+
     async function loadFX() {
         try {
             const r = await fetch('https://api.frankfurter.app/latest?from=EUR&to=DKK,NOK,SEK');
@@ -1287,16 +1642,80 @@
                 EUR: 1,
                 ...d.rates
             };
+            fxUpdatedAt = new Date();
         } catch (e) {}
+        updateFXDisplay();
+    }
+
+    function updateFXDisplay() {
         const el = document.getElementById('fx-bar');
-        if (el)
-            el.textContent = `1€ = ${FX.DKK.toFixed(2)} DKK · ${FX.NOK.toFixed(2)} NOK · ${FX.SEK.toFixed(2)} SEK`;
-        ['dkk', 'nok', 'sek'].forEach(c => {
-            const x = document.getElementById('fx-' + c);
-            if (x)
-                x.textContent = FX[c.toUpperCase()].toFixed(2);
+        if (el) {
+            if (sessionCurrency) {
+                const rate = FX[sessionCurrency.code];
+                const inv = (100 / rate).toFixed(2);
+                el.innerHTML =
+                `${sessionCurrency.flag} <span style="opacity:.5;font-size:10px;margin-right:2px">EUR→${sessionCurrency.code}</span>`
+                + `<b style="color:var(--text);font-weight:600">1€ = ${rate.toFixed(2)} ${sessionCurrency.code}</b>`
+                + `<span style="margin:0 8px;opacity:.25">│</span>`
+                + `<span style="opacity:.5;font-size:10px;margin-right:2px">${sessionCurrency.code}→EUR</span>`
+                + `<b style="color:var(--text);font-weight:600">100 ${sessionCurrency.code} = ${inv} €</b>`;
+            } else {
+                el.textContent = `1€ = ${FX.DKK.toFixed(2)} DKK · ${FX.NOK.toFixed(2)} NOK · ${FX.SEK.toFixed(2)} SEK`;
+            }
+        }
+        renderFXTable();
+    }
+
+    function renderFXTable() {
+        const tbody = document.getElementById('fx-tbody');
+        if (!tbody)
+            return;
+        // Always show all 3 currencies in Today tab
+        const toShow = ALL_CURRENCIES;
+        tbody.innerHTML = toShow.map(c => `
+    <tr>
+      <td class="flag">${
+        c.flag}</td>
+      <td><b>${c.code}</b><div style="font-size:10px;color:var(--text2)">${c.name}</div></td>
+      <td class="rate">${FX[c.code].toFixed(2)}</td>
+      <td class="rate">${(100 / FX[c.code]).toFixed(2)}</td>
+    </tr>`
+        ).join('');
+        // Update thead to clarify 100kr
+        const thead = document.getElementById('fx-thead');
+        if (thead) {
+            const cur = sessionCurrency ? sessionCurrency.code : 'kr';
+            thead.innerHTML = `<tr><th></th><th>Währung</th><th style="text-align:right">1 € =</th><th style="text-align:right">100 ${cur} =</th></tr>`;
+        }
+        const upd = document.getElementById('fx-updated-time');
+        if (upd && fxUpdatedAt)
+            upd.textContent = 'Kurse vom ' + fxUpdatedAt.toLocaleTimeString('de', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+    }
+
+    // Detect country from GPS and set sessionCurrency
+    async function detectSessionCurrency() {
+        if (!navigator.geolocation)
+            return;
+        navigator.geolocation.getCurrentPosition(async pos => {
+            try {
+                const {latitude: lat, longitude: lng} = pos.coords;
+                const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=de`);
+                const d = await r.json();
+                const cc = (d.address?.country_code || '').toUpperCase();
+                if (COUNTRY_CURRENCY[cc]) {
+                    sessionCurrency = COUNTRY_CURRENCY[cc];
+                    updateFXDisplay();
+                }
+            } catch (e) {}
+        }, () => {}, {
+            timeout: 8000,
+            enableHighAccuracy: false
         });
     }
+
     function toEUR(a, cur) {
         return a / (FX[cur] || 1);
     }
@@ -1306,7 +1725,6 @@
         tileLayer = null,
         routeLayer = null,
         markerLayer = null;
-
     function initMap() {
         if (map)
             return;
@@ -1321,17 +1739,12 @@
         routeLayer = L.layerGroup().addTo(map);
         markerLayer = L.layerGroup().addTo(map);
     }
-
     function updateMapTiles() {
-        if (!map || !tileLayer)
+        if (!tileLayer)
             return;
         const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-        const url = dark
-        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-        : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-        tileLayer.setUrl(url);
+        tileLayer.setUrl(dark ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png');
     }
-
     function renderMap(stops) {
         if (!map)
             initMap();
@@ -1353,7 +1766,7 @@
             const isLast = i === stops.length - 1;
             const icon = L.divIcon({
                 className: '',
-                html: `<div style="background:${isLast ? '#4CAF73' : '#E8A838'};border:2px solid ${isLast ? '#fff' : 'rgba(255,255,255,.7)'};border-radius:50%;width:${isLast ? 16 : 11}px;height:${isLast ? 16 : 11}px;box-shadow:0 2px 8px rgba(0,0,0,.4)"></div>`,
+                html: `<div style="background:${isLast ? '#4CAF73' : '#E8A838'};border:2px solid #fff;border-radius:50%;width:${isLast ? 16 : 11}px;height:${isLast ? 16 : 11}px;box-shadow:0 2px 8px rgba(0,0,0,.4)"></div>`,
                 iconSize: [isLast ? 16 : 11, isLast ? 16 : 11],
                 iconAnchor: [isLast ? 8 : 5.5, isLast ? 8 : 5.5]
             });
@@ -1397,7 +1810,7 @@
         return stops.reduce((a, s) => a + (s.km || 0), 0);
     }
 
-    // ── Geocoding ─────────────────────────────────────────────────────
+    // ── Geocoding + Autocomplete ──────────────────────────────────────
     async function geocode(query) {
         const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`, {
             headers: {
@@ -1412,19 +1825,88 @@
             lng: parseFloat(d[0].lon)
         };
     }
+    async function searchPlaces(query) {
+        const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&addressdetails=1`, {
+            headers: {
+                'Accept-Language': 'de'
+            }
+        });
+        return await r.json();
+    }
+
+    let acTimer = null,
+        acSelected = null;
+    function setupAutocomplete(inputId, listId) {
+        const inp = document.getElementById(inputId);
+        const list = document.getElementById(listId);
+        if (!inp || !list)
+            return;
+        inp.addEventListener('input', () => {
+            const val = inp.value.trim();
+            acSelected = null;
+            if (val.length < 3) {
+                list.style.display = 'none';
+                return;
+            }
+            clearTimeout(acTimer);
+            acTimer = setTimeout(async () => {
+                try {
+                    const results = await searchPlaces(val);
+                    if (!results.length) {
+                        list.style.display = 'none';
+                        return;
+                    }
+                    list.innerHTML = results.map((r, i) => {
+                        const city = r.address?.city || r.address?.town || r.address?.village || r.name || '';
+                        const country = r.address?.country || '';
+                        const display = city + (country ? ' · ' + country : '');
+                        return `<div class="autocomplete-item" data-lat="${r.lat}" data-lng="${r.lon}" data-name="${display}" onclick="selectPlace(${i},'${inputId}','${listId}')">${display}</div>`;
+                    }).join('');
+                    list._results = results;
+                    list.style.display = 'block';
+                } catch (e) {
+                    list.style.display = 'none';
+                }
+            }, 400);
+        });
+        inp.addEventListener('blur', () => setTimeout(() => {
+            list.style.display = 'none';
+        }, 200));
+    }
+    window.selectPlace = function(idx, inputId, listId) {
+        const list = document.getElementById(listId);
+        const inp = document.getElementById(inputId);
+        const r = list._results?.[idx];
+        if (!r)
+            return;
+        const city = r.address?.city || r.address?.town || r.address?.village || r.name || '';
+        const country = r.address?.country || '';
+        inp.value = city + (country ? ', ' + country : '');
+        inp.dataset.lat = r.lat;
+        inp.dataset.lng = r.lon;
+        list.style.display = 'none';
+        acSelected = {
+            lat: parseFloat(r.lat),
+            lng: parseFloat(r.lon)
+        };
+    };
 
     // ── State ─────────────────────────────────────────────────────────
     let tripCode = null,
         myName = null,
         unsubscribe = null,
         editingExpId = null;
-
     const fmt = d => d.toISOString().split('T')[0];
     const today = () => fmt(new Date());
     const getCat = id => CATS.find(c => c.id === id) || CATS[CATS.length - 1];
+    const getCatColor = id => {
+        const i = CATS.findIndex(c => c.id === id);
+        return CAT_COLORS[i] || '#8C8C8C';
+    };
     const fmtDate = d => new Date(d + 'T12:00:00').toLocaleDateString('de', {
         day: 'numeric',
-        month: 'short'
+        month: 'short',
+        weekday: 'short'
     });
     const totalSpentEUR = exs => exs.reduce((a, e) => a + (e.amountEUR ?? e.amount ?? 0), 0);
     const calcDayBudget = (total, start, end) => {
@@ -1432,6 +1914,34 @@
         return total / Math.max(1, days);
     };
 
+    // ── Haptic ────────────────────────────────────────────────────────
+    function haptic(type='light') {
+        try {
+            navigator.vibrate && navigator.vibrate(type === 'light' ? 10 : type === 'medium' ? 20 : 50);
+        } catch (e) {}
+    }
+
+    // ── Animated counter ──────────────────────────────────────────────
+    function animateNum(el, target, prefix='€', decimals=0) {
+        const start = parseFloat(el.dataset.val || '0');
+        el.dataset.val = target;
+        const dur = 400,
+            steps = 20,
+            step = (target - start) / steps;
+        let cur = start,
+            count = 0;
+        const t = setInterval(() => {
+            cur += step;
+            count++;
+            if (count >= steps) {
+                cur = target;
+                clearInterval(t);
+            }
+            el.textContent = prefix + Math.round(cur).toLocaleString('de');
+        }, dur / steps);
+    }
+
+    // ── Toast ─────────────────────────────────────────────────────────
     function showToast(msg, dur=2400) {
         const el = document.getElementById('toast');
         el.textContent = msg;
@@ -1439,9 +1949,12 @@
         clearTimeout(el._t);
         el._t = setTimeout(() => el.classList.remove('show'), dur);
     }
-    function confetti() {
+
+    // ── Confetti ──────────────────────────────────────────────────────
+    function confetti(extra=false) {
         const colors = ['#4CAF73', '#E8A838', '#3DA8BE', '#E05555', '#A8D86B'];
-        for (let i = 0; i < 20; i++) {
+        const count = extra ? 40 : 20;
+        for (let i = 0; i < count; i++) {
             const el = document.createElement('div');
             el.className = 'confetti-bit';
             el.style.cssText = `left:${Math.random() * 100}vw;top:-8px;background:${colors[i % colors.length]};animation-delay:${Math.random() * .7}s;animation-duration:${1.8 + Math.random() * 1.2}s;transform:rotate(${Math.random() * 360}deg);border-radius:${Math.random() > .5 ? '50%' : '2px'}`;
@@ -1450,7 +1963,21 @@
         }
     }
 
-    // ── Theme Toggle ──────────────────────────────────────────────────
+    // ── km Milestones ─────────────────────────────────────────────────
+    let lastKmMilestone = 0;
+    function checkKmMilestone(km) {
+        const milestones = [500, 1000, 1500, 2000, 2500, 3000, 4000, 5000];
+        for (const m of milestones) {
+            if (km >= m && lastKmMilestone < m) {
+                lastKmMilestone = m;
+                confetti(true);
+                showToast('🎊 ' + m + ' km Meilenstein erreicht!', 3500);
+                haptic('strong');
+            }
+        }
+    }
+
+    // ── Theme ─────────────────────────────────────────────────────────
     window.toggleTheme = function() {
         const html = document.documentElement;
         const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
@@ -1460,14 +1987,22 @@
         updateMapTiles();
     };
 
+    // ── Reload ────────────────────────────────────────────────────────
+    window.reloadApp = function() {
+        const btn = document.getElementById('reload-btn');
+        btn.classList.add('spinning');
+        setTimeout(() => location.reload(), 300);
+    };
+
     // ── Boot ──────────────────────────────────────────────────────────
     window.addEventListener('DOMContentLoaded', () => {
-        // Theme
         const savedTheme = localStorage.getItem('budgio_theme') || 'dark';
         document.documentElement.setAttribute('data-theme', savedTheme);
         document.getElementById('theme-btn').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
 
         loadFX();
+        detectSessionCurrency();
+
         const saved = localStorage.getItem('budgio_session');
         if (saved) {
             const s = JSON.parse(saved);
@@ -1476,6 +2011,10 @@
             showApp();
             subscribeTrip();
         } else {
+            // Pre-fill last code
+            const lastCode = localStorage.getItem('budgio_last_code');
+            if (lastCode)
+                document.getElementById('j-code').value = lastCode;
             showScreen('screen-home');
         }
         const t = new Date(),
@@ -1485,6 +2024,14 @@
         document.getElementById('s-end').value = fmt(e);
         renderSetupPersons();
         document.getElementById('qa-cat').innerHTML = CATS.map(c => `<option value="${c.id}">${c.emoji} ${c.name}</option>`).join('');
+        document.getElementById('edit-cat').innerHTML = CATS.map(c => `<option value="${c.id}">${c.emoji} ${c.name}</option>`).join('');
+        setupAutocomplete('stop-name', 'ac-list');
+
+        // Online/offline
+        window.addEventListener('offline', () => document.getElementById('offline-banner').classList.add('show'));
+        window.addEventListener('online', () => document.getElementById('offline-banner').classList.remove('show'));
+        if (!navigator.onLine)
+            document.getElementById('offline-banner').classList.add('show');
     });
 
     function showScreen(id) {
@@ -1559,6 +2106,7 @@
                 code,
                 name: creator
             }));
+            localStorage.setItem('budgio_last_code', code);
             showApp();
             subscribeTrip();
             showToast('Reise erstellt! Code: ' + code);
@@ -1569,6 +2117,7 @@
             document.getElementById('btn-create').disabled = false;
         }
     };
+
     window.joinTrip = async function() {
         const code = document.getElementById('j-code').value.trim().toUpperCase();
         const name = document.getElementById('j-name').value.trim();
@@ -1589,6 +2138,7 @@
                 code,
                 name
             }));
+            localStorage.setItem('budgio_last_code', code);
             showApp();
             subscribeTrip();
             showToast('Willkommen, ' + name + '!');
@@ -1639,6 +2189,7 @@
             document.getElementById('qa-amt').focus();
             return;
         }
+        haptic('light');
         const amountEUR = toEUR(amt, currency);
         if (editingExpId) {
             const old = data.expenses.find(e => e.id === editingExpId);
@@ -1685,29 +2236,96 @@
                 document.getElementById('qa-amt').value = '';
                 if (totalSpentEUR(data.expenses) / data.total < 0.45)
                     confetti();
-            }
-            catch (err) {
+            } catch (err) {
                 showToast('Fehler: ' + err.message);
             }
         }
     };
-    window.startEdit = function(expId) {
+
+    // ── Expense Edit Modal ────────────────────────────────────────────
+    window.openExpenseEdit = function(expId) {
         const data = window._tripData;
         if (!data)
             return;
         const exp = data.expenses.find(e => e.id === expId);
         if (!exp)
             return;
-        editingExpId = expId;
-        document.getElementById('qa-cat').value = exp.catId;
-        document.getElementById('qa-desc').value = exp.desc;
-        document.getElementById('qa-amt').value = exp.amount;
-        document.getElementById('qa-currency').value = exp.currency || 'EUR';
-        document.getElementById('qa-add-btn').textContent = '💾';
-        document.getElementById('qa-cancel-btn').style.display = 'flex';
-        document.getElementById('qa-edit-hint').style.display = 'flex';
-        document.getElementById('qa-amt').focus();
-        showToast('Bearbeitungsmodus aktiv');
+        document.getElementById('edit-cat').value = exp.catId;
+        document.getElementById('edit-desc').value = exp.desc;
+        document.getElementById('edit-amt').value = exp.amount;
+        document.getElementById('edit-currency').value = exp.currency || 'EUR';
+        document.getElementById('edit-date').value = exp.date;
+        document.getElementById('expense-edit-modal').dataset.expId = expId;
+        document.getElementById('expense-edit-modal').style.display = 'flex';
+    };
+    window.closeExpenseEdit = function() {
+        document.getElementById('expense-edit-modal').style.display = 'none';
+    };
+    window.saveExpenseEdit = async function() {
+        const data = window._tripData;
+        if (!data)
+            return;
+        const expId = document.getElementById('expense-edit-modal').dataset.expId;
+        const old = data.expenses.find(e => e.id === expId);
+        if (!old)
+            return;
+        const catId = document.getElementById('edit-cat').value;
+        const desc = document.getElementById('edit-desc').value.trim();
+        const amt = parseFloat(document.getElementById('edit-amt').value);
+        const currency = document.getElementById('edit-currency').value;
+        const date = document.getElementById('edit-date').value;
+        if (!amt || amt <= 0 || !date) {
+            showToast('Betrag und Datum ausfüllen');
+            return;
+        }
+        const amountEUR = toEUR(amt, currency);
+        const updated = {
+            ...old,
+            catId,
+            desc: desc || getCat(catId).name,
+            amount: amt,
+            amountEUR,
+            currency,
+            date,
+            editedBy: myName
+        };
+        try {
+            await updateDoc(doc(db, 'trips', tripCode), {
+                expenses: arrayRemove(old)
+            });
+            await updateDoc(doc(db, 'trips', tripCode), {
+                expenses: arrayUnion(updated)
+            });
+            showToast('Ausgabe aktualisiert');
+        } catch (err) {
+            showToast('Fehler: ' + err.message);
+        }
+        closeExpenseEdit();
+    };
+    window.delExpenseFromModal = async function() {
+        const data = window._tripData;
+        if (!data)
+            return;
+        const expId = document.getElementById('expense-edit-modal').dataset.expId;
+        const exp = data.expenses.find(e => e.id === expId);
+        if (!exp)
+            return;
+        if (!confirm('"' + exp.desc + '" löschen?'))
+            return;
+        try {
+            await updateDoc(doc(db, 'trips', tripCode), {
+                expenses: arrayRemove(exp)
+            });
+        }
+        catch (err) {
+            showToast('Fehler: ' + err.message);
+        }
+        closeExpenseEdit();
+    };
+
+    // Quick-add edit (inline)
+    window.startEdit = function(expId) {
+        openExpenseEdit(expId);
     };
     window.cancelEdit = function() {
         editingExpId = null;
@@ -1718,6 +2336,7 @@
         document.getElementById('qa-cancel-btn').style.display = 'none';
         document.getElementById('qa-edit-hint').style.display = 'none';
     };
+
     window.delExpense = async function(expId) {
         const data = window._tripData;
         if (!data)
@@ -1737,6 +2356,41 @@
         }
     };
 
+    // ── Swipe to delete ───────────────────────────────────────────────
+    function addSwipeToDelete(el, expId) {
+        let startX = 0,
+            dx = 0,
+            swiping = false;
+        el.addEventListener('touchstart', e => {
+            startX = e.touches[0].clientX;
+            swiping = true;
+            dx = 0;
+        }, {
+            passive: true
+        });
+        el.addEventListener('touchmove', e => {
+            if (!swiping)
+                return;
+            dx = e.touches[0].clientX - startX;
+            if (dx < 0)
+                el.style.transform = `translateX(${Math.max(dx, -80)}px)`;
+        }, {
+            passive: true
+        });
+        el.addEventListener('touchend', () => {
+            if (dx < -60) {
+                el.style.transform = 'translateX(-80px)';
+                setTimeout(() => {
+                    el.style.transform = '';
+                    delExpense(expId);
+                }, 300);
+            } else {
+                el.style.transform = '';
+            }
+            swiping = false;
+        });
+    }
+
     // ── GPS ───────────────────────────────────────────────────────────
     window.locateMe = function() {
         const btn = document.getElementById('gps-btn');
@@ -1751,12 +2405,21 @@
                 const {latitude: lat, longitude: lng} = pos.coords;
                 const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=de`);
                 const d = await r.json();
+                const cc = (d.address?.country_code || '').toUpperCase();
+                if (COUNTRY_CURRENCY[cc] && !sessionCurrency) {
+                    sessionCurrency = COUNTRY_CURRENCY[cc];
+                    updateFXDisplay();
+                }
                 const place = d.address?.city || d.address?.town || d.address?.village || d.address?.county || 'Aktueller Standort';
                 const country = d.address?.country || '';
                 const inp = document.getElementById('stop-name');
                 inp.value = place + (country ? ', ' + country : '');
                 inp.dataset.lat = lat;
                 inp.dataset.lng = lng;
+                acSelected = {
+                    lat,
+                    lng
+                };
                 showToast('Standort: ' + place);
             } catch (e) {
                 showToast('Standort nicht bestimmbar');
@@ -1777,6 +2440,8 @@
 
     // ── Stops ─────────────────────────────────────────────────────────
     async function resolveGeo(nameEl) {
+        if (acSelected)
+            return acSelected;
         const lat = parseFloat(nameEl.dataset.lat),
             lng = parseFloat(nameEl.dataset.lng);
         if (lat && lng) {
@@ -1832,6 +2497,9 @@
             nameEl.value = '';
             document.getElementById('stop-note').value = '';
             document.getElementById('stop-ferry').checked = false;
+            acSelected = null;
+            haptic('medium');
+            checkKmMilestone(totalKm([...(data.stops || []), stop]));
             showToast(name + (km ? ' – ' + km + ' km' : ' hinzugefügt'));
         } catch (err) {
             showToast('Fehler: ' + err.message);
@@ -1842,7 +2510,6 @@
         }
     };
 
-    // ── Stop Edit Modal ───────────────────────────────────────────────
     window.openStopEdit = function(stopId) {
         const data = window._tripData;
         if (!data)
@@ -1876,8 +2543,6 @@
             showToast('Name und Datum ausfüllen');
             return;
         }
-
-        // Re-geocode if name changed
         let lat = old.lat,
             lng = old.lng;
         if (name !== old.name) {
@@ -1887,8 +2552,6 @@
                 lng = geo.lng;
             }
         }
-
-        // Recalculate km: find index, recalc this stop's km from prev and next stop's km from this
         const stops = [...data.stops];
         const idx = stops.findIndex(s => s.id === stopId);
         const updated = {
@@ -1900,32 +2563,25 @@
             lng,
             ferry
         };
-
-        // km from prev to this stop
-        if (idx > 0) {
+        if (idx > 0)
             updated.km = await routeKm(stops[idx - 1], {
                 lat,
                 lng
             }, ferry);
-        }
-
         try {
-            // Replace this stop
             await updateDoc(doc(db, 'trips', tripCode), {
                 stops: arrayRemove(old)
             });
             await updateDoc(doc(db, 'trips', tripCode), {
                 stops: arrayUnion(updated)
             });
-
-            // Recalculate next stop's km if it exists
             if (idx < stops.length - 1) {
                 const next = stops[idx + 1];
                 const nextKm = await routeKm({
                     lat,
                     lng
                 }, next, next.ferry);
-                const nextUpdated = {
+                const nextUpd = {
                     ...next,
                     km: nextKm
                 };
@@ -1933,7 +2589,7 @@
                     stops: arrayRemove(next)
                 });
                 await updateDoc(doc(db, 'trips', tripCode), {
-                    stops: arrayUnion(nextUpdated)
+                    stops: arrayUnion(nextUpd)
                 });
             }
             showToast('Station aktualisiert');
@@ -1961,6 +2617,33 @@
             showToast('Fehler: ' + err.message);
         }
         closeStopEdit();
+    };
+
+    // ── CSV Export ────────────────────────────────────────────────────
+    window.exportCSV = function() {
+        const data = window._tripData;
+        if (!data || !data.expenses?.length) {
+            showToast('Keine Ausgaben zum Exportieren');
+            return;
+        }
+        const rows = [['Datum', 'Kategorie', 'Beschreibung', 'Betrag (Original)', 'Währung', 'Betrag (EUR)', 'Hinzugefügt von']];
+        const sorted = [...data.expenses].sort((a, b) => a.date.localeCompare(b.date));
+        sorted.forEach(e => {
+            rows.push([e.date, getCat(e.catId).name, e.desc, e.amount, e.currency || 'EUR', (e.amountEUR ?? e.amount ?? 0).toFixed(2), e.addedBy || '']);
+        });
+        const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+        const blob = new Blob(['\uFEFF' + csv], {
+            type: 'text/csv;charset=utf-8;'
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'budgio-ausgaben-' + data.name.replace(/\s/g, '_') + '.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('CSV exportiert');
     };
 
     // ── Settings ──────────────────────────────────────────────────────
@@ -2033,10 +2716,11 @@
                 initMap();
                 updateMapTiles();
                 map.invalidateSize();
-                const stops = window._tripData?.stops || [];
-                renderMap(stops);
+                renderMap(getSortedStops(window._tripData?.stops || []));
             }, 120);
         }
+        if (tab === 'today')
+            renderFXTable();
     };
 
     // ══ RENDER ═══════════════════════════════════════════════════════
@@ -2046,9 +2730,12 @@
         renderToday(data);
         renderHistory(data);
         renderRoute(data);
-        // Always keep map updated
         if (document.getElementById('sec-route').classList.contains('active'))
-            renderMap(data.stops || []);
+            renderMap(getSortedStops(data.stops || []));
+    }
+
+    function getSortedStops(stops) {
+        return [...stops].sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
     }
 
     function renderHeader(data) {
@@ -2163,7 +2850,9 @@
         ? sorted.map(([id, amt]) => {
             const pct = Math.min(100, Math.round(amt / total * 100));
             const c = getCat(id);
-            return '<div class="cat-bar-row"><div class="cat-bar-header"><b>' + c.emoji + ' ' + c.name + '</b><span>€' + amt.toFixed(2) + ' · ' + pct + '%</span></div><div class="bar-track" style="height:6px"><div class="bar-fill" style="width:' + pct + '%;background:linear-gradient(90deg,#2A6B7C,#3DA8BE)"></div></div></div>';
+            const col = getCatColor(id);
+            return '<div class="cat-bar-row"><div class="cat-bar-header"><span class="cat-badge c-' + id + '">' + c.emoji + ' ' + c.name + '</span><span>€' + amt.toFixed(2) + ' · ' + pct + '%</span></div>'
+            + '<div class="bar-track" style="height:6px"><div class="bar-fill" style="width:' + pct + '%;background:' + col + '44;border-right:2px solid ' + col + '"></div></div></div>';
         }).join('')
         : '<div class="empty"><div class="empty-icon">📊</div><p>Noch keine Ausgaben</p></div>';
     }
@@ -2174,7 +2863,11 @@
         const exps = expenses.filter(e => e.date === td).sort((a, b) => b.id.localeCompare(a.id));
         const todaySpent = exps.reduce((a, e) => a + (e.amountEUR ?? e.amount ?? 0), 0);
         const remain = daily - todaySpent;
-        document.getElementById('today-label').textContent = 'Heute · ' + fmtDate(td);
+        document.getElementById('today-label').textContent = 'Heute · ' + new Date().toLocaleDateString('de', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long'
+        });
         const trnum = document.getElementById('today-remain-num');
         trnum.textContent = (remain >= 0 ? '+' : '') + remain.toFixed(0) + ' €';
         trnum.style.color = remain >= 0 ? 'var(--green)' : 'var(--red)';
@@ -2190,38 +2883,104 @@
             document.getElementById('today-status-title').textContent = 'Tagesbudget überschritten';
             document.getElementById('today-status-sub').textContent = '€' + Math.abs(remain).toFixed(2) + ' über dem Limit';
         }
-        document.getElementById('today-tx-list').innerHTML = exps.length ? exps.map(e => txHTML(e)).join('') : '<div class="empty"><div class="empty-icon">☀️</div><p>Noch keine Ausgaben heute</p></div>';
+        document.getElementById('today-tx-list').innerHTML = exps.length
+        ? exps.map(e => txHTML(e, true)).join('')
+        : '<div class="empty"><div class="empty-icon">☀️</div><p>Heute noch keine Ausgaben</p><button class="empty-action" onclick="document.getElementById(\'qa-amt\').focus()">Erste Ausgabe eintragen</button></div>';
+        renderFXTable();
     }
 
     function renderHistory(data) {
-        // Alle Ausgaben chronologisch absteigend, alle editierbar
-        const sorted = [...(data.expenses || [])].sort((a, b) => b.id.localeCompare(a.id));
-        document.getElementById('all-tx-list').innerHTML = sorted.length ? sorted.map(e => txHTML(e, true)).join('') : '<div class="empty"><div class="empty-icon">🧾</div><p>Noch keine Ausgaben</p></div>';
+        const expenses = [...(data.expenses || [])].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+        const histDiv = document.getElementById('all-tx-list');
+        if (!expenses.length) {
+            document.getElementById('history-chart').style.display = 'none';
+            histDiv.innerHTML = '<div class="empty"><div class="empty-icon">🧾</div><p>Noch keine Ausgaben</p></div>';
+            return;
+        }
+
+        // Pie chart
+        document.getElementById('history-chart').style.display = 'block';
+        renderPieChart(data.expenses || []);
+
+        // Group by date
+        const groups = {};
+        expenses.forEach(e => {
+            if (!groups[e.date])
+                groups[e.date] = [];
+            groups[e.date].push(e);
+        });
+        histDiv.innerHTML = Object.entries(groups).map(([date, exps]) => {
+            const dayTotal = exps.reduce((a, e) => a + (e.amountEUR ?? e.amount ?? 0), 0);
+            return '<div class="day-group-header"><span>' + fmtDate(date) + '</span><span class="day-group-total">€' + dayTotal.toFixed(2) + '</span></div>'
+            + exps.map(e => txHTML(e, true)).join('');
+        }).join('');
+    }
+
+    function renderPieChart(expenses) {
+        const catTotals = {};
+        expenses.forEach(e => {
+            catTotals[e.catId] = (catTotals[e.catId] || 0) + (e.amountEUR ?? e.amount ?? 0);
+        });
+        const total = Object.values(catTotals).reduce((a, v) => a + v, 0);
+        if (!total)
+            return;
+        const entries = Object.entries(catTotals).sort((a, b) => b[1] - a[1]).slice(0, 6);
+
+        let startAngle = 0;
+        const cx = 60,
+            cy = 60,
+            r = 54;
+        let paths = '';
+        entries.forEach(([id, val]) => {
+            const pct = val / total;
+            const angle = pct * 2 * Math.PI;
+            const x1 = cx + r * Math.sin(startAngle),
+                y1 = cy - r * Math.cos(startAngle);
+            const x2 = cx + r * Math.sin(startAngle + angle),
+                y2 = cy - r * Math.cos(startAngle + angle);
+            const large = angle > Math.PI ? 1 : 0;
+            const col = getCatColor(id);
+            paths += `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z" fill="${col}" opacity="0.85"/>`;
+            startAngle += angle;
+        });
+        // Center hole
+        paths += `<circle cx="${cx}" cy="${cy}" r="28" fill="var(--surface)"/>`;
+        paths += `<text x="${cx}" y="${cy + 5}" text-anchor="middle" font-size="11" fill="var(--text2)" font-family="Instrument Sans">€${Math.round(total)}</text>`;
+
+        document.getElementById('pie-svg').innerHTML = paths;
+        document.getElementById('pie-legend').innerHTML = entries.map(([id, val]) => {
+            const c = getCat(id);
+            const col = getCatColor(id);
+            const pct = Math.round(val / total * 100);
+            return `<div class="legend-item"><div class="legend-dot" style="background:${col}"></div><span class="legend-name">${c.emoji} ${c.name}</span><span class="legend-val" style="color:${col}">${pct}%</span></div>`;
+        }).join('');
     }
 
     function txHTML(e, forceEditable=false) {
         const c = getCat(e.catId);
-        const origAmt = (e.currency && e.currency !== 'EUR') ? '<div style="font-size:10px;color:var(--text2)">' + e.amount?.toFixed(0) + ' ' + e.currency + '</div>' : '';
-        const canEdit = forceEditable || e.addedBy === myName;
+        const col = getCatColor(e.catId);
+        const origAmt = (e.currency && e.currency !== 'EUR') ? '<span style="font-size:10px;color:var(--text2);margin-left:4px">' + e.amount?.toFixed(0) + ' ' + e.currency + '</span>' : '';
         return '<div class="tx">'
-        + '<div class="tx-icon">' + c.emoji + '</div>'
-        + '<div class="tx-body"><div class="tx-name">' + e.desc + (e.editedBy ? '<span class="edited-tag">bearbeitet</span>' : '') + '</div>'
-        + '<div class="tx-meta">' + c.name + ' · ' + fmtDate(e.date) + '</div></div>'
+        + '<div class="tx-icon" style="background:' + col + '22">' + c.emoji + '</div>'
+        + '<div class="tx-body">'
+        + '<div class="tx-name">' + e.desc + (e.editedBy ? '<span class="edited-tag">bearbeitet</span>' : '') + '</div>'
+        + '<div class="tx-meta"><span class="cat-badge c-' + e.catId + '" style="padding:1px 6px;font-size:10px">' + c.name + '</span></div>'
+        + '</div>'
         + '<div class="tx-right"><div class="tx-amt">€' + (e.amountEUR ?? e.amount ?? 0).toFixed(2) + '</div>' + origAmt + '</div>'
-        + (canEdit ? '<div class="tx-actions"><button class="tx-edit" onclick="startEdit(\'' + e.id + '\')">✏️</button><button class="tx-del" onclick="delExpense(\'' + e.id + '\')">🗑</button></div>' : '')
+        + '<div class="tx-actions"><button class="tx-edit" onclick="openExpenseEdit(\'' + e.id + '\')">✏️</button><button class="tx-del" onclick="delExpense(\'' + e.id + '\')">🗑</button></div>'
         + '</div>';
     }
 
     function renderRoute(data) {
-        // Stops chronologisch sortiert
-        const stops = [...(data.stops || [])].sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+        const stops = getSortedStops(data.stops || []);
         const km = totalKm(stops);
         document.getElementById('route-stops').textContent = stops.length;
         document.getElementById('route-km').textContent = km > 0 ? km + ' km' : '–';
+        checkKmMilestone(km);
 
         const list = document.getElementById('stop-list');
         if (!stops.length) {
-            list.innerHTML = '<div class="empty"><div class="empty-icon">🗺️</div><p>Noch keine Stationen eingetragen</p></div>';
+            list.innerHTML = '<div class="empty"><div class="empty-icon">🗺️</div><p>Noch keine Stationen eingetragen</p><button class="empty-action" onclick="document.getElementById(\'stop-name\').focus()">Erste Station hinzufügen</button></div>';
         } else {
             let cumKm = 0;
             list.innerHTML = stops.map((s, i) => {
@@ -2231,28 +2990,15 @@
                 const segKm = i === 0 ? 'Startpunkt' : (s.km ? s.km + ' km' : '– km');
                 const cumLabel = i > 0 && cumKm > 0 ? ' · Σ ' + cumKm + ' km' : '';
                 return '<div class="stop-item">'
-                + '<div class="stop-connector">'
-                + '<div class="stop-dot' + (isLast ? ' stop-dot-active' : '') + '"></div>'
-                + (!isLast ? '<div class="stop-line"></div>' : '')
-                + '</div>'
+                + '<div class="stop-connector"><div class="stop-dot' + (isLast ? ' stop-dot-active' : '') + '"></div>' + (!isLast ? '<div class="stop-line"></div>' : '') + '</div>'
                 + '<div class="seg-badge' + (i === 0 ? ' seg-start' : s.ferry ? ' seg-ferry' : '') + '">' + modeIcon + ' ' + segKm + '</div>'
-                + '<div class="stop-body">'
-                + '<div class="stop-name">' + s.name + '</div>'
-                + '<div class="stop-meta">' + fmtDate(s.date) + cumLabel + (s.note ? ' · ' + s.note : '') + '</div>'
-                + '</div>'
-                + '<div class="stop-actions">'
-                + '<button class="tx-edit" onclick="openStopEdit(\'' + s.id + '\')">✏️</button>'
-                + '<button class="tx-del" onclick="openStopEdit(\'' + s.id + '\')">🗑</button>'
-                + '</div>'
+                + '<div class="stop-body"><div class="stop-name">' + s.name + '</div>'
+                + '<div class="stop-meta">' + fmtDate(s.date) + cumLabel + (s.note ? ' · ' + s.note : '') + '</div></div>'
+                + '<div class="stop-actions"><button class="tx-edit" onclick="openStopEdit(\'' + s.id + '\')">✏️</button></div>'
                 + '</div>';
             }).join('');
-
-
-
         }
     }
-    // Fix: del button should call modal which has delete option
-    // Already handled via openStopEdit modal
 
     function fillSettings(data) {
         if (!data)
@@ -2269,7 +3015,45 @@
 <body>
     <div class="toast" id="toast"></div>
 
-    <!-- STOP EDIT MODAL -->
+    <!-- MODALS -->
+    <div class="modal-overlay" id="expense-edit-modal" style="display:none" onclick="if(event.target===this)closeExpenseEdit()">
+        <div class="modal">
+            <button class="modal-close" onclick="closeExpenseEdit()">✕</button>
+            <div class="modal-title">Ausgabe bearbeiten</div>
+            <div class="form-group">
+                <label class="form-lbl">Kategorie</label>
+                <select class="form-sel" id="edit-cat"></select>
+            </div>
+            <div class="form-group">
+                <label class="form-lbl">Beschreibung</label>
+                <input class="form-inp" id="edit-desc" placeholder="z.B. Abendessen am Fjord"/>
+            </div>
+            <div class="form-2col">
+                <div>
+                    <label class="form-lbl">Betrag</label>
+                    <input class="form-inp" id="edit-amt" type="number" inputmode="decimal" step="0.01"/>
+                </div>
+                <div>
+                    <label class="form-lbl">Währung</label>
+                    <select class="form-sel" id="edit-currency">
+                        <option value="EUR">€ EUR</option>
+                        <option value="DKK">DKK</option>
+                        <option value="NOK">NOK</option>
+                        <option value="SEK">SEK</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-lbl">Datum</label>
+                <input class="form-inp" id="edit-date" type="date"/>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-save" onclick="saveExpenseEdit()">💾 Speichern</button>
+                <button class="modal-del" onclick="delExpenseFromModal()">🗑 Löschen</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="stop-edit-modal" style="display:none" onclick="if(event.target===this)closeStopEdit()">
         <div class="modal">
             <button class="modal-close" onclick="closeStopEdit()">✕</button>
@@ -2332,7 +3116,7 @@
         <div class="screen-card">
             <h2>🔑 Reise beitreten</h2>
             <label class="s-lbl">Reise-Code</label>
-            <input class="s-inp" id="j-code" placeholder="z.B. SKAND926" style="letter-spacing:3px;font-family:'Fraunces',serif;font-size:20px"/>
+            <input class="s-inp" id="j-code" placeholder="z.B. SKAND926" style="letter-spacing:3px;font-family:'Fraunces',serif;font-size:20px;text-transform:uppercase"/>
             <label class="s-lbl">Dein Name</label>
             <input class="s-inp" id="j-name" placeholder="z.B. Mama"/>
             <button class="primary-btn" id="btn-join" onclick="joinTrip()">Beitreten →</button>
@@ -2348,12 +3132,14 @@
                     <div class="trip-dates" id="hdr-dates"></div>
                 </div>
                 <div class="topbar-right">
-                    <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()">☀️</button>
-                    <span id="conn-status">🟡</span>
-                    <button class="icon-btn" onclick="switchTab('settings')">⚙️</button>
+                    <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Farbschema">☀️</button>
+                    <span id="conn-status" style="font-size:14px">🟡</span>
+                    <button class="icon-btn" id="reload-btn" onclick="reloadApp()" title="Neu laden">🔄</button>
+                    <button class="icon-btn" onclick="switchTab('settings')" title="Einstellungen">⚙️</button>
                 </div>
             </div>
         </div>
+        <div class="offline-banner" id="offline-banner">🔴 Keine Verbindung – Änderungen werden gespeichert sobald du wieder online bist</div>
         <div class="fx-strip" id="fx-bar">Kurse werden geladen…</div>
         <div class="nav">
             <button class="nav-btn active" onclick="switchTab('overview')">
@@ -2467,13 +3253,16 @@
                     <div class="route-stat-lbl">Gefahrene km</div>
                 </div>
             </div>
-            <div class="card" style="padding:12px">
+            <div class="card" style="padding:12px;margin-bottom:12px">
                 <div id="route-map"></div>
             </div>
             <div class="stop-add-form">
                 <div class="card-label" style="margin-bottom:10px">📍 Station hinzufügen</div>
-                <div style="display:flex;gap:8px;margin-bottom:8px">
-                    <input class="s-inp" id="stop-name" placeholder="Ortsname (z.B. Kopenhagen, Dänemark)" style="margin-bottom:0;flex:1"/>
+                <div style="display:flex;gap:8px;margin-bottom:8px;position:relative">
+                    <div class="autocomplete-wrap">
+                        <input class="s-inp" id="stop-name" placeholder="Ortsname (z.B. Kopenhagen)" style="margin-bottom:0;width:100%" autocomplete="off"/>
+                        <div class="autocomplete-list" id="ac-list" style="display:none"></div>
+                    </div>
                     <button class="gps-btn" id="gps-btn" onclick="locateMe()">📍 GPS</button>
                 </div>
                 <input class="s-inp" id="stop-note" placeholder="Notiz (optional)"/>
@@ -2497,6 +3286,21 @@
         <!-- HEUTE -->
         <div class="section" id="sec-today">
             <div class="card">
+                <div class="card-label">Wechselkurse (live)</div>
+                <table class="fx-table">
+                    <thead id="fx-thead">
+                        <tr>
+                            <th></th>
+                            <th>Währung</th>
+                            <th style="text-align:right">1 € =</th>
+                            <th style="text-align:right">100 kr =</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fx-tbody"></tbody>
+                </table>
+                <div class="fx-updated" id="fx-updated-time"></div>
+            </div>
+            <div class="card">
                 <div class="card-label" id="today-label">Heute</div>
                 <div class="day-budget-card" style="margin-bottom:12px">
                     <div class="left">
@@ -2505,17 +3309,19 @@
                     </div>
                     <div class="right" id="today-remain-num">€0</div>
                 </div>
-                <div id="today-tx-list">
-                    <div class="empty">
-                        <div class="empty-icon">☀️</div>
-                        <p>Noch keine Ausgaben heute</p>
-                    </div>
-                </div>
+                <div id="today-tx-list"></div>
             </div>
         </div>
 
         <!-- VERLAUF -->
         <div class="section" id="sec-history">
+            <div class="card" id="history-chart" style="display:none">
+                <div class="card-label">Ausgabenverteilung</div>
+                <div class="chart-wrap">
+                    <svg class="pie-svg" width="120" height="120" viewBox="0 0 120 120" id="pie-svg"></svg>
+                    <div class="legend" id="pie-legend"></div>
+                </div>
+            </div>
             <div class="card">
                 <div class="card-label">Alle Ausgaben</div>
                 <div id="all-tx-list">
@@ -2562,10 +3368,11 @@
                 </div>
                 <div class="daily-display" id="cfg-daily-display">Tagesbudget wird automatisch berechnet</div>
                 <button class="save-btn" onclick="saveSettings()">Änderungen speichern</button>
+                <button class="export-btn" onclick="exportCSV()">📥 Ausgaben als CSV exportieren</button>
                 <button class="danger-btn" onclick="leaveTrip()">Reise verlassen</button>
             </div>
             <div class="card">
-                <div class="card-label">Wechselkurse (live)</div>
+                <div class="card-label">Wechselkurse</div>
                 <div style="font-size:13px;color:var(--text2);line-height:2.2">
                     <div>
                         🇩🇰 1 € = 
