@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -138,7 +137,7 @@ const fmt     = d=>d.toISOString().split('T')[0];
 const today   = ()=>fmt(new Date());
 const getCat  = id=>CATS.find(c=>c.id===id)||CATS[CATS.length-1];
 const fmtDate = d=>new Date(d+'T12:00:00').toLocaleDateString('de',{day:'numeric',month:'short'});
-const totalSpentEUR = ex=>ex.reduce((a,e)=>a+e.amountEUR,0);
+const totalSpentEUR = ex=>ex.reduce((a,e)=>a+(e.amountEUR??e.amount??0),0);
 const calcDayBudget = (total,start,end)=>{
   const days=Math.round((new Date(end+'T12:00:00')-new Date(start+'T12:00:00'))/86400000)+1;
   return total/Math.max(1,days);
@@ -446,7 +445,7 @@ function renderOverview(data){
   foreEl.textContent=spent?((leftFore>=0?'+':'')+leftFore.toFixed(0)+' €'):'–';
   foreEl.style.color=leftFore>=0?'var(--green)':'var(--red)';
 
-  const todaySpent=expenses.filter(ex=>ex.date===today()).reduce((a,ex)=>a+ex.amountEUR,0);
+  const todaySpent=expenses.filter(ex=>ex.date===today()).reduce((a,ex)=>a+(ex.amountEUR??ex.amount??0),0);
   document.getElementById('day-sub').textContent=`von €${daily.toFixed(0)} Tagesbudget`;
   const dnum=document.getElementById('day-spent-num');
   dnum.textContent='€'+todaySpent.toFixed(0);
@@ -466,7 +465,7 @@ function renderOverview(data){
   else{bei.textContent='🔥';bti.textContent='Hohe Burn Rate!';bsu.textContent=`${Math.round((ratio-1)*100)}% über dem Zeitplan`;}
 
   const catTotals={};
-  expenses.forEach(ex=>{catTotals[ex.catId]=(catTotals[ex.catId]||0)+ex.amountEUR;});
+  expenses.forEach(ex=>{catTotals[ex.catId]=(catTotals[ex.catId]||0)+(ex.amountEUR??ex.amount??0);});
   const sorted=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]);
   document.getElementById('cat-overview').innerHTML=sorted.length
     ?sorted.map(([id,amt])=>{
@@ -485,7 +484,7 @@ function renderToday(data){
   const {expenses=[],daily}=data;
   const td=today();
   const exps=expenses.filter(e=>e.date===td).sort((a,b)=>b.id.localeCompare(a.id));
-  const todaySpent=exps.reduce((a,e)=>a+e.amountEUR,0);
+  const todaySpent=exps.reduce((a,e)=>a+(e.amountEUR??e.amount??0),0);
   const remain=daily-todaySpent;
   document.getElementById('today-label').textContent='Heute · '+fmtDate(td);
   const trnum=document.getElementById('today-remain-num');
@@ -520,7 +519,7 @@ function txHTML(e){
       <div class="tx-meta">${c.name} · ${fmtDate(e.date)}</div>
     </div>
     <div class="tx-right">
-      <div class="tx-amt">€${e.amountEUR.toFixed(2)}</div>
+      <div class="tx-amt">€${(e.amountEUR??e.amount??0).toFixed(2)}</div>
       ${origAmt}
     </div>
     ${canEdit?`<div class="tx-actions">
@@ -748,14 +747,12 @@ body{font-family:'Instrument Sans',sans-serif;background:var(--bg);color:var(--t
 .confetti-bit{position:fixed;width:7px;height:7px;border-radius:2px;pointer-events:none;z-index:9999;animation:cfall 2.4s ease-in forwards}
 @keyframes cfall{0%{transform:translateY(-10px) rotate(0);opacity:1}100%{transform:translateY(110vh) rotate(800deg);opacity:0}}
 </style>
-
 </head>
 <body>
 
 <div class="toast" id="toast"></div>
 
 <!-- ══ HOME ══════════════════════════════════════════════════════ -->
-
 <div class="screen" id="screen-home">
   <div class="logo">🌿 Budgio</div>
   <div class="tagline">Dein Reisebegleiter für Skandinavien</div>
@@ -792,7 +789,6 @@ body{font-family:'Instrument Sans',sans-serif;background:var(--bg);color:var(--t
 </div>
 
 <!-- ══ APP ════════════════════════════════════════════════════════ -->
-
 <div id="app">
   <div class="topbar">
     <div class="topbar-row">
@@ -816,7 +812,6 @@ body{font-family:'Instrument Sans',sans-serif;background:var(--bg);color:var(--t
   </div>
 
   <!-- BUDGET -->
-
   <div class="section active" id="sec-overview">
     <div class="card">
       <div class="card-label">Verbleibendes Budget</div>
@@ -864,7 +859,6 @@ body{font-family:'Instrument Sans',sans-serif;background:var(--bg);color:var(--t
   </div>
 
   <!-- ROUTE -->
-
   <div class="section" id="sec-route">
     <div class="route-stats">
       <div class="route-stat"><div class="route-stat-num" id="route-stops">0</div><div class="route-stat-lbl">Stationen</div></div>
@@ -884,7 +878,6 @@ body{font-family:'Instrument Sans',sans-serif;background:var(--bg);color:var(--t
   </div>
 
   <!-- HEUTE -->
-
   <div class="section" id="sec-today">
     <div class="card">
       <div class="card-label" id="today-label">Heute</div>
@@ -897,7 +890,6 @@ body{font-family:'Instrument Sans',sans-serif;background:var(--bg);color:var(--t
   </div>
 
   <!-- VERLAUF -->
-
   <div class="section" id="sec-history">
     <div class="card"><div class="card-label">Alle Ausgaben</div>
       <div id="all-tx-list"><div class="empty"><div class="empty-icon">🧾</div><p>Noch keine Ausgaben</p></div></div>
@@ -905,7 +897,6 @@ body{font-family:'Instrument Sans',sans-serif;background:var(--bg);color:var(--t
   </div>
 
   <!-- EINSTELLUNGEN -->
-
   <div class="section" id="sec-settings">
     <div class="card">
       <div class="card-label">Reise-Code teilen</div>
@@ -939,7 +930,6 @@ body{font-family:'Instrument Sans',sans-serif;background:var(--bg);color:var(--t
 </div>
 
 <!-- ══ QUICK ADD ══════════════════════════════════════════════════ -->
-
 <div class="qa-bar" id="qa-bar" style="display:none">
   <div class="qa-edit-hint" id="qa-edit-hint">✏️ Bearbeitungsmodus · <span style="text-decoration:underline;cursor:pointer" onclick="cancelEdit()">abbrechen</span></div>
   <div class="qa-row1">
@@ -976,6 +966,5 @@ document.addEventListener('DOMContentLoaded',()=>{
     }).catch(()=>{});
 });
 </script>
-
 </body>
 </html>
