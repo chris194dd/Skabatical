@@ -3,13 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Budgio – Skandinavien</title>
+<title>Budgio</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script type="module">
-import { initializeApp }     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, arrayUnion, arrayRemove }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -34,6 +33,940 @@ const CATS = [
   {id:'ferry',      emoji:'⛴️', name:'Fähre & Maut'},
   {id:'act',        emoji:'🎭', name:'Aktivitäten & Ausflüge'},
   {id:'museum',     emoji:'🏛️', name:'Museum & Sehenswürdigkeiten'},
+  {id:'dog',        emoji:'🐾', name:'Hund'},
+  {id:'health',     emoji:'💊', name:'Apotheke & Gesundheit'},
+  {id:'shop',       emoji:'🛍️', name:'Shopping'},
+  {id:'misc',       emoji:'💡', name:'Sonstiges'},
+];
+
+// ── Währungen / FX ────────────────────────────────────────────────
+let FX = {EUR:1, DKK:7.46, NOK:11.8, SEK:11.3};
+async function loadFX(){
+  try {
+    const r = await fetch('https://api.frankfurter.app/latest?from=EUR&to=DKK,NOK,SEK');
+    const d = await r.json();
+    FX = {EUR:1, ...d.rates};
+  } catch(e){}
+  const el = document.getElementById('fx-bar');
+  if(el) el.textContent = `1€ = ${FX.DKK.toFixed(2)} DKK · ${FX.NOK.toFixed(2)} NOK · ${FX.SEK.toFixed(2)} SEK`;
+  ['dkk','nok','sek'].forEach(c => {
+    const x = document.getElementById('fx-'+c);
+    if(x) x.textContent = FX[c.toUpperCase()].toFixed(2);
+  });
+}
+function toEUR(amount, currency){ return amount / (FX[currency] || 1); }
+
+// ── Karte ─────────────────────────────────────────────────────────
+let map = null, routeLayer = null, markerLayer = null;
+function initMap(){
+  if(map) return;
+  map = L.map('route-map', {zoomControl:true}).setView([58, 14], 4);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution:'© OpenStreetMap © CARTO', maxZoom:19
+  }).addTo(map);
+  routeLayer = L.layerGroup().addTo(map);
+  markerLayer = L.layerGroup().addTo(map);
+}
+function renderMap(stops){
+  if(!map) initMap();
+  routeLayer.clearLayers(); markerLayer.clearLayers();
+  if(!stops || !stops.length) return;
+  const coords = stops.map(s => [s.lat, s.lng]);
+  if(coords.length > 1)
+    L.polyline(coords, {color:'#4CAF73', weight:3, opacity:.85, dashArray:'7,5'}).addTo(routeLayer);
+  stops.forEach((s, i) => {
+    const isLast = i === stops.length - 1;
+    const icon = L.divIcon({
+      className:'',
+      html: `<div style="background:${isLast?'#4CAF73':'#E8A838'};border:2px solid #fff;border-radius:50%;width:${isLast?16:11}px;height:${isLast?16:11}px;box-shadow:0 2px 8px rgba(0,0,0,.4)"></div>`,
+      iconSize:[isLast?16:11, isLast?16:11],
+      iconAnchor:[isLast?8:5.5, isLast?8:5.5]
+    });
+    const mode = i === 0 ? '' : s.ferry ? ' · ⛴️ Fähre' : ' · 🚗 Straße';
+    const km   = i === 0 ? '' : s.km ? ` · ${s.km} km` : '';
+    L.marker([s.lat, s.lng], {icon})
+      .bindPopup(`<b>${s.name}</b><br>${s.date}${mode}${km}${s.note?'<br><i>'+s.note+'</i>':''}`)
+      .addTo(markerLayer);
+  });
+  if(coords.length === 1) map.setView(coords[0], 8);
+  else map.fitBounds(L.latLngBounds(coords), {padding:[32,32]});
+  setTimeout(() => map.invalidateSize(), 200);
+}
+
+// ── Routing ───────────────────────────────────────────────────────
+function haversine(a, b){
+  const R=6371, dLat=(b.lat-a.lat)*Math.PI/180, dLon=(b.lng-a.lng)*Math.PI/180;
+  const x=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
+}
+async function routeKm(a, b, ferry){
+  if(ferry) return Math.round(haversine(a, b)); // Fähre = Luftlinie
+  try {
+    const url = `https://router.project-osrm.org/route/v1/driving/${a.lng},${a.lat};${b.lng},${b.lat}?overview=false`;
+    const r = await fetch(url);
+    const d = await r.json();
+    if(d.code === 'Ok' && d.routes?.[0]) return Math.round(d.routes[0].distance / 1000);
+  } catch(e){}
+  return Math.round(haversine(a, b)); // Fallback Luftlinie
+}
+function totalKm(stops){
+  return stops.reduce((a, s) => a + (s.km || 0), 0);
+}
+
+// ── Geocoding ─────────────────────────────────────────────────────
+async function geocode(query){
+  const r = await fetch(
+    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
+    {headers:{'Accept-Language':'de'}}
+  );
+  const d = await r.json();
+  if(!d || !d[0]) return null;
+  return {lat: parseFloat(d[0].lat), lng: parseFloat(d[0].lon)};
+}
+
+// ── State ─────────────────────────────────────────────────────────
+let tripCode=null, myName=null, unsubscribe=null, editingExpId=null;
+
+const fmt     = d => d.toISOString().split('T')[0];
+const today   = () => fmt(new Date());
+const getCat  = id => CATS.find(c => c.id === id) || CATS[CATS.length-1];
+const fmtDate = d => new Date(d+'T12:00:00').toLocaleDateString('de', {day:'numeric', month:'short'});
+const totalSpentEUR = exs => exs.reduce((a,e) => a+(e.amountEUR??e.amount??0), 0);
+const calcDayBudget = (total,start,end) => {
+  const days = Math.round((new Date(end+'T12:00:00')-new Date(start+'T12:00:00'))/86400000)+1;
+  return total / Math.max(1, days);
+};
+
+function showToast(msg, dur=2400){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'), dur);
+}
+function confetti(){
+  const colors=['#4CAF73','#E8A838','#3DA8BE','#E05555','#A8D86B'];
+  for(let i=0;i<20;i++){
+    const el=document.createElement('div'); el.className='confetti-bit';
+    el.style.cssText=`left:${Math.random()*100}vw;top:-8px;background:${colors[i%colors.length]};animation-delay:${Math.random()*.7}s;animation-duration:${1.8+Math.random()*1.2}s;transform:rotate(${Math.random()*360}deg);border-radius:${Math.random()>.5?'50%':'2px'}`;
+    document.body.appendChild(el); el.addEventListener('animationend',()=>el.remove());
+  }
+}
+
+// ── Boot ──────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', ()=>{
+  loadFX();
+  const saved = localStorage.getItem('budgio_session');
+  if(saved){
+    const s=JSON.parse(saved); tripCode=s.code; myName=s.name;
+    showApp(); subscribeTrip();
+  } else {
+    showScreen('screen-home');
+  }
+  const t=new Date(), e=new Date(); e.setDate(e.getDate()+7);
+  document.getElementById('s-start').value = fmt(t);
+  document.getElementById('s-end').value   = fmt(e);
+  renderSetupPersons();
+  document.getElementById('qa-cat').innerHTML = CATS.map(c=>`<option value="${c.id}">${c.emoji} ${c.name}</option>`).join('');
+});
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.style.display='none');
+  document.getElementById(id).style.display='flex';
+}
+function showApp(){
+  document.querySelectorAll('.screen').forEach(s=>s.style.display='none');
+  document.getElementById('app').style.display='block';
+  document.getElementById('qa-bar').style.display='block';
+}
+
+// ── Setup persons ─────────────────────────────────────────────────
+let setupPersons = [{id:'p1', name:'Ich', emoji:'🧑'}];
+window.renderSetupPersons = function(){
+  document.getElementById('setup-persons').innerHTML =
+    setupPersons.map(p=>`<div class="person-tag" onclick="removeSetupPerson('${p.id}')">${p.emoji} ${p.name} <span class="rm">✕</span></div>`).join('');
+};
+window.removeSetupPerson = function(id){
+  setupPersons = setupPersons.filter(p=>p.id!==id); renderSetupPersons();
+};
+window.addSetupPerson = function(){
+  const nm=document.getElementById('s-pname').value.trim(); if(!nm) return;
+  const em=document.getElementById('s-pemoji').value.trim()||'🧑';
+  setupPersons.push({id:'p'+Date.now(), name:nm, emoji:em});
+  document.getElementById('s-pname').value=''; document.getElementById('s-pemoji').value='';
+  renderSetupPersons();
+};
+
+// ── Create / Join ─────────────────────────────────────────────────
+window.createTrip = async function(){
+  const name  = document.getElementById('s-name').value.trim();
+  const total = parseFloat(document.getElementById('s-total').value);
+  const start = document.getElementById('s-start').value;
+  const end   = document.getElementById('s-end').value;
+  const creator = document.getElementById('s-creator').value.trim() || 'Admin';
+  if(!name||!total||!start||!end){showToast('Bitte alle Felder ausfüllen'); return;}
+  if(end<=start){showToast('Enddatum muss nach Startdatum liegen'); return;}
+  const code = name.replace(/\s+/g,'').toUpperCase().slice(0,6)+Math.floor(100+Math.random()*900);
+  try {
+    document.getElementById('btn-create').disabled=true;
+    await setDoc(doc(db,'trips',code), {name,total,start,end,persons:[...setupPersons],expenses:[],stops:[],code,createdAt:Date.now()});
+    tripCode=code; myName=creator;
+    localStorage.setItem('budgio_session', JSON.stringify({code, name:creator}));
+    showApp(); subscribeTrip(); showToast('Reise erstellt! Code: '+code);
+  } catch(err){ showToast('Fehler: '+err.message); }
+  finally { document.getElementById('btn-create').disabled=false; }
+};
+window.joinTrip = async function(){
+  const code = document.getElementById('j-code').value.trim().toUpperCase();
+  const name = document.getElementById('j-name').value.trim();
+  if(!code||!name){showToast('Code und Name eingeben'); return;}
+  try {
+    document.getElementById('btn-join').disabled=true;
+    const snap = await getDoc(doc(db,'trips',code));
+    if(!snap.exists()){showToast('Reise nicht gefunden'); return;}
+    tripCode=code; myName=name;
+    localStorage.setItem('budgio_session', JSON.stringify({code, name}));
+    showApp(); subscribeTrip(); showToast('Willkommen, '+name+'!');
+  } catch(err){ showToast('Fehler: '+err.message); }
+  finally { document.getElementById('btn-join').disabled=false; }
+};
+
+// ── Firebase listener ─────────────────────────────────────────────
+function subscribeTrip(){
+  if(unsubscribe) unsubscribe();
+  setConn('connecting');
+  unsubscribe = onSnapshot(doc(db,'trips',tripCode), snap=>{
+    if(!snap.exists()) return;
+    const data = snap.data();
+    data.daily = calcDayBudget(data.total, data.start, data.end);
+    window._tripData = data;
+    window._tripCode = tripCode;
+    setConn('online');
+    render(data);
+  }, ()=>setConn('offline'));
+}
+function setConn(s){
+  const el=document.getElementById('conn-status');
+  if(el) el.textContent={online:'🟢',connecting:'🟡',offline:'🔴'}[s];
+}
+
+// ── Ausgaben ──────────────────────────────────────────────────────
+window.addExpense = async function(){
+  const data=window._tripData; if(!data) return;
+  const catId    = document.getElementById('qa-cat').value;
+  const desc     = document.getElementById('qa-desc').value.trim();
+  const amt      = parseFloat(document.getElementById('qa-amt').value);
+  const currency = document.getElementById('qa-currency').value;
+  if(!amt||amt<=0){document.getElementById('qa-amt').focus(); return;}
+  const amountEUR = toEUR(amt, currency);
+
+  if(editingExpId){
+    const old = data.expenses.find(e=>e.id===editingExpId); if(!old) return;
+    const updated = {...old, catId, desc:desc||getCat(catId).name, amount:amt, amountEUR, currency, editedBy:myName};
+    try {
+      await updateDoc(doc(db,'trips',tripCode),{expenses:arrayRemove(old)});
+      await updateDoc(doc(db,'trips',tripCode),{expenses:arrayUnion(updated)});
+      showToast('Aktualisiert');
+    } catch(err){ showToast('Fehler: '+err.message); }
+    cancelEdit();
+  } else {
+    const expense = {id:'e'+Date.now(), catId, desc:desc||getCat(catId).name, amount:amt, amountEUR, currency, date:today(), addedBy:myName};
+    try {
+      await updateDoc(doc(db,'trips',tripCode),{expenses:arrayUnion(expense)});
+      document.getElementById('qa-desc').value='';
+      document.getElementById('qa-amt').value='';
+      if(totalSpentEUR(data.expenses)/data.total < 0.45) confetti();
+    } catch(err){ showToast('Fehler: '+err.message); }
+  }
+};
+window.startEdit = function(expId){
+  const data=window._tripData; if(!data) return;
+  const exp=data.expenses.find(e=>e.id===expId); if(!exp) return;
+  editingExpId=expId;
+  document.getElementById('qa-cat').value    = exp.catId;
+  document.getElementById('qa-desc').value   = exp.desc;
+  document.getElementById('qa-amt').value    = exp.amount;
+  document.getElementById('qa-currency').value = exp.currency||'EUR';
+  document.getElementById('qa-add-btn').textContent='💾';
+  document.getElementById('qa-cancel-btn').style.display='flex';
+  document.getElementById('qa-edit-hint').style.display='flex';
+  document.getElementById('qa-amt').focus();
+  showToast('Bearbeitungsmodus aktiv');
+};
+window.cancelEdit = function(){
+  editingExpId=null;
+  document.getElementById('qa-desc').value='';
+  document.getElementById('qa-amt').value='';
+  document.getElementById('qa-currency').value='EUR';
+  document.getElementById('qa-add-btn').textContent='＋';
+  document.getElementById('qa-cancel-btn').style.display='none';
+  document.getElementById('qa-edit-hint').style.display='none';
+};
+window.delExpense = async function(expId){
+  const data=window._tripData; if(!data) return;
+  const exp=data.expenses.find(e=>e.id===expId); if(!exp) return;
+  if(!confirm('"'+exp.desc+'" löschen?')) return;
+  try { await updateDoc(doc(db,'trips',tripCode),{expenses:arrayRemove(exp)}); }
+  catch(err){ showToast('Fehler: '+err.message); }
+};
+
+// ── Stops ─────────────────────────────────────────────────────────
+// GPS: aktuellen Standort ermitteln und Ortsname per Reverse-Geocoding holen
+window.locateMe = async function(){
+  const btn=document.getElementById('gps-btn');
+  if(!navigator.geolocation){showToast('GPS nicht verfügbar'); return;}
+  btn.disabled=true; btn.textContent='GPS...';
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    try {
+      const {latitude:lat, longitude:lng} = pos.coords;
+      const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=de`);
+      const d = await r.json();
+      const place = d.address?.city || d.address?.town || d.address?.village || d.address?.county || 'Aktueller Standort';
+      const country = d.address?.country || '';
+      document.getElementById('stop-name').value = place + (country ? ', '+country : '');
+      // Koordinaten direkt vorbelegen damit kein Geocoding nötig
+      document.getElementById('stop-name').dataset.lat = lat;
+      document.getElementById('stop-name').dataset.lng = lng;
+      showToast('Standort erkannt: '+place);
+    } catch(e){ showToast('Standort konnte nicht bestimmt werden'); }
+    finally { btn.disabled=false; btn.textContent='📍 GPS'; }
+  }, ()=>{ showToast('GPS-Zugriff verweigert'); btn.disabled=false; btn.textContent='📍 GPS'; },
+  {timeout:10000, enableHighAccuracy:true});
+};
+
+async function resolveGeo(nameEl){
+  // Vorrang: direkt vom GPS gesetzte Koordinaten
+  const lat=parseFloat(nameEl.dataset.lat), lng=parseFloat(nameEl.dataset.lng);
+  if(lat && lng){ delete nameEl.dataset.lat; delete nameEl.dataset.lng; return {lat,lng}; }
+  return await geocode(nameEl.value.trim());
+}
+
+window.addStop = async function(){
+  const nameEl = document.getElementById('stop-name');
+  const name   = nameEl.value.trim();
+  const note   = document.getElementById('stop-note').value.trim();
+  const ferry  = document.getElementById('stop-ferry').checked;
+  if(!name){showToast('Ortsname eingeben'); return;}
+  const btn = document.getElementById('stop-add-btn');
+  btn.disabled=true; btn.textContent='Suche Ort...';
+  try {
+    const geo = await resolveGeo(nameEl);
+    if(!geo){showToast('Ort nicht gefunden – genauer eingeben'); return;}
+
+    const data = window._tripData;
+    const prev = data?.stops?.length ? data.stops[data.stops.length-1] : null;
+    let km = 0;
+    if(prev){
+      btn.textContent = ferry ? 'Berechne...' : 'Route wird berechnet...';
+      km = await routeKm(prev, geo, ferry);
+    }
+
+    const stop = {id:'s'+Date.now(), name, note, lat:geo.lat, lng:geo.lng, date:today(), addedBy:myName, km, ferry:!!ferry};
+    await updateDoc(doc(db,'trips',tripCode),{stops:arrayUnion(stop)});
+    nameEl.value='';
+    document.getElementById('stop-note').value='';
+    document.getElementById('stop-ferry').checked=false;
+    showToast(name + (km ? ' – ' + km + ' km' : ' hinzugefügt'));
+  } catch(err){ showToast('Fehler: '+err.message); }
+  finally { btn.disabled=false; btn.textContent='Station hinzufügen'; }
+};
+window.delStop = async function(stopId){
+  const data=window._tripData; if(!data) return;
+  const stop=data.stops.find(s=>s.id===stopId); if(!stop) return;
+  if(!confirm('"'+stop.name+'" entfernen?')) return;
+  try { await updateDoc(doc(db,'trips',tripCode),{stops:arrayRemove(stop)}); }
+  catch(err){ showToast('Fehler: '+err.message); }
+};
+
+// ── Settings ──────────────────────────────────────────────────────
+window.saveSettings = async function(){
+  const name  = document.getElementById('cfg-name').value.trim();
+  const total = parseFloat(document.getElementById('cfg-total').value);
+  const start = document.getElementById('cfg-start').value;
+  const end   = document.getElementById('cfg-end').value;
+  if(!name||!total||!start||!end){showToast('Bitte alle Felder ausfüllen'); return;}
+  if(end<=start){showToast('Enddatum prüfen'); return;}
+  try {
+    await updateDoc(doc(db,'trips',tripCode),{name,total,start,end});
+    showToast('Gespeichert'); switchTab('overview');
+  } catch(err){ showToast('Fehler: '+err.message); }
+};
+window.leaveTrip = function(){
+  if(!confirm('Reise verlassen?')) return;
+  if(unsubscribe) unsubscribe();
+  localStorage.removeItem('budgio_session');
+  location.reload();
+};
+window.copyCode = function(){
+  const code=window._tripCode; if(!code) return;
+  navigator.clipboard?.writeText(code).then(()=>showToast('Code kopiert!'));
+};
+
+// ── Tab switch ────────────────────────────────────────────────────
+window.switchTab = function(tab){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+tab).classList.add('active');
+  const idx={overview:0,route:1,today:2,history:3,settings:3};
+  document.querySelectorAll('.nav-btn')[idx[tab]||0]?.classList.add('active');
+  const qa=document.getElementById('qa-bar');
+  if(tab==='settings'||tab==='route'){ qa.style.display='none'; cancelEdit(); } else qa.style.display='block';
+  if(tab==='settings') fillSettings(window._tripData);
+  if(tab==='route'){
+    setTimeout(()=>{ if(!map) initMap(); map.invalidateSize(); if(window._tripData?.stops?.length) renderMap(window._tripData.stops); },120);
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════════════════
+function render(data){
+  renderHeader(data); renderOverview(data); renderToday(data); renderHistory(data); renderRoute(data);
+}
+
+function renderHeader(data){
+  document.getElementById('hdr-name').textContent = data.name;
+  const s=new Date(data.start+'T12:00:00'), e=new Date(data.end+'T12:00:00');
+  const days=Math.round((e-s)/86400000)+1;
+  document.getElementById('hdr-dates').textContent =
+    s.toLocaleDateString('de',{day:'numeric',month:'short'})+' – '+e.toLocaleDateString('de',{day:'numeric',month:'short'})+' · '+days+' Tage';
+  document.getElementById('settings-code').textContent = tripCode||'–';
+}
+
+function renderOverview(data){
+  const {total,daily,start,end,expenses=[]}=data;
+  const now=new Date();
+  const s=new Date(start+'T00:00:00'), e=new Date(end+'T23:59:59');
+  const totalDays=Math.round((e-s)/86400000);
+  const elapsed=Math.max(0,Math.min((now-s)/86400000,totalDays));
+  const timePct=Math.min(100,Math.round(elapsed/totalDays*100));
+  const spent=totalSpentEUR(expenses);
+  const remaining=total-spent;
+  const moneyPct=Math.min(100,Math.round(spent/total*100));
+
+  document.getElementById('hero-num').textContent=Math.max(0,remaining).toFixed(0);
+  document.getElementById('hero-rem').className='hero-remaining'+(remaining<0?' danger':moneyPct>timePct+10?' warn':'');
+  document.getElementById('hero-of').textContent='von €'+total.toFixed(0)+' · '+moneyPct+'% verbraucht';
+
+  const pill=document.getElementById('status-pill');
+  const diff=moneyPct-timePct;
+  if(!spent){pill.textContent='Los geht\'s!';pill.className='status-pill pill-ok';}
+  else if(diff<=-5){pill.textContent='✅ Unter Budget';pill.className='status-pill pill-ok';}
+  else if(diff<=10){pill.textContent='⚖️ Im Plan';pill.className='status-pill pill-ok';}
+  else{pill.textContent='⚠️ Überpace';pill.className='status-pill pill-warn';}
+
+  document.getElementById('bar-time').style.width=timePct+'%';
+  document.getElementById('time-pct').textContent=timePct+'%';
+  const bb=document.getElementById('bar-budget');
+  bb.style.width=moneyPct+'%';
+  bb.className='bar-fill fill-budget'+(moneyPct>timePct+10?' over':'');
+  document.getElementById('budget-pct').textContent=moneyPct+'%';
+
+  const daysLeft=Math.max(0,(e-now)/86400000);
+  const avgPerDay=spent/Math.max(.01,elapsed);
+  const leftFore=total-(spent+avgPerDay*daysLeft);
+  const foreEl=document.getElementById('forecast');
+  foreEl.textContent=spent?((leftFore>=0?'+':'')+leftFore.toFixed(0)+' €'):'–';
+  foreEl.style.color=leftFore>=0?'var(--green)':'var(--red)';
+
+  const todaySpent=expenses.filter(ex=>ex.date===today()).reduce((a,ex)=>a+(ex.amountEUR??ex.amount??0),0);
+  document.getElementById('day-sub').textContent='von €'+daily.toFixed(0)+' Tagesbudget';
+  const dnum=document.getElementById('day-spent-num');
+  dnum.textContent='€'+todaySpent.toFixed(0);
+  dnum.className='right '+(todaySpent>daily?'over':'ok');
+
+  document.getElementById('stat-avg').textContent='€'+(spent/Math.max(.01,elapsed)).toFixed(0);
+  document.getElementById('stat-ideal').textContent='€'+(daysLeft>0?(remaining/daysLeft).toFixed(0):'0');
+  document.getElementById('stat-days').textContent=Math.max(0,Math.ceil(daysLeft));
+  document.getElementById('stat-total-spent').textContent='€'+spent.toFixed(0);
+
+  const ratio=timePct>0?(moneyPct/timePct):null;
+  const bei=document.getElementById('burn-emoji'), bti=document.getElementById('burn-title'), bsu=document.getElementById('burn-sub');
+  if(!spent||!ratio){bei.textContent='📊';bti.textContent='Noch keine Ausgaben';bsu.textContent='Füge deine erste Ausgabe hinzu';}
+  else if(ratio<0.75){bei.textContent='🐢';bti.textContent='Sehr sparsam – super!';bsu.textContent=Math.round((1-ratio)*100)+'% unter dem Zeitplan';}
+  else if(ratio<=1.1){bei.textContent='😊';bti.textContent='Perfekt im Plan';bsu.textContent='Ausgaben und Zeit im Gleichschritt';}
+  else if(ratio<=1.3){bei.textContent='⚡';bti.textContent='Leicht über Tempo';bsu.textContent=Math.round((ratio-1)*100)+'% schneller als geplant';}
+  else{bei.textContent='🔥';bti.textContent='Hohe Burn Rate!';bsu.textContent=Math.round((ratio-1)*100)+'% über dem Zeitplan';}
+
+  const catTotals={};
+  expenses.forEach(ex=>{catTotals[ex.catId]=(catTotals[ex.catId]||0)+(ex.amountEUR??ex.amount??0);});
+  const sorted=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('cat-overview').innerHTML=sorted.length
+    ?sorted.map(([id,amt])=>{
+        const pct=Math.min(100,Math.round(amt/total*100));
+        const c=getCat(id);
+        return '<div class="cat-bar-row"><div class="cat-bar-header"><b>'+c.emoji+' '+c.name+'</b><span>€'+amt.toFixed(2)+' · '+pct+'%</span></div>'
+          +'<div class="bar-track" style="height:6px"><div class="bar-fill" style="width:'+pct+'%;background:linear-gradient(90deg,#2A6B7C,#3DA8BE)"></div></div></div>';
+      }).join('')
+    :'<div class="empty"><div class="empty-icon">📊</div><p>Noch keine Ausgaben</p></div>';
+}
+
+function renderToday(data){
+  const {expenses=[],daily}=data;
+  const td=today();
+  const exps=expenses.filter(e=>e.date===td).sort((a,b)=>b.id.localeCompare(a.id));
+  const todaySpent=exps.reduce((a,e)=>a+(e.amountEUR??e.amount??0),0);
+  const remain=daily-todaySpent;
+  document.getElementById('today-label').textContent='Heute · '+fmtDate(td);
+  const trnum=document.getElementById('today-remain-num');
+  trnum.textContent=(remain>=0?'+':'')+remain.toFixed(0)+' €';
+  trnum.style.color=remain>=0?'var(--green)':'var(--red)';
+  if(!todaySpent){
+    document.getElementById('today-status-title').textContent='Noch nichts ausgegeben';
+    document.getElementById('today-status-sub').textContent='Tagesbudget: €'+daily.toFixed(0);
+  } else if(remain>=0){
+    document.getElementById('today-status-title').textContent='Im Tagesbudget';
+    document.getElementById('today-status-sub').textContent='€'+todaySpent.toFixed(2)+' von €'+daily.toFixed(0);
+  } else {
+    document.getElementById('today-status-title').textContent='Tagesbudget überschritten';
+    document.getElementById('today-status-sub').textContent='€'+Math.abs(remain).toFixed(2)+' über dem Limit';
+  }
+  document.getElementById('today-tx-list').innerHTML=exps.length
+    ?exps.map(e=>txHTML(e)).join('')
+    :'<div class="empty"><div class="empty-icon">☀️</div><p>Noch keine Ausgaben heute</p></div>';
+}
+
+function renderHistory(data){
+  const sorted=[...(data.expenses||[])].sort((a,b)=>b.id.localeCompare(a.id));
+  document.getElementById('all-tx-list').innerHTML=sorted.length
+    ?sorted.map(e=>txHTML(e)).join('')
+    :'<div class="empty"><div class="empty-icon">🧾</div><p>Noch keine Ausgaben</p></div>';
+}
+
+function txHTML(e){
+  const c=getCat(e.catId);
+  const origAmt=(e.currency&&e.currency!=='EUR')
+    ?'<div style="font-size:10px;color:var(--text2)">'+e.amount?.toFixed(0)+' '+e.currency+'</div>':'';
+  const canEdit=e.addedBy===myName;
+  return '<div class="tx">'
+    +'<div class="tx-icon">'+c.emoji+'</div>'
+    +'<div class="tx-body">'
+    +'<div class="tx-name">'+e.desc+(e.editedBy?'<span class="edited-tag">bearbeitet</span>':'')+'</div>'
+    +'<div class="tx-meta">'+c.name+' · '+fmtDate(e.date)+'</div>'
+    +'</div>'
+    +'<div class="tx-right"><div class="tx-amt">€'+(e.amountEUR??e.amount??0).toFixed(2)+'</div>'+origAmt+'</div>'
+    +(canEdit?'<div class="tx-actions"><button class="tx-edit" onclick="startEdit(\''+e.id+'\')">✏️</button><button class="tx-del" onclick="delExpense(\''+e.id+'\')">🗑</button></div>':'')
+    +'</div>';
+}
+
+function renderRoute(data){
+  const stops=data.stops||[];
+  const km=totalKm(stops);
+  document.getElementById('route-stops').textContent=stops.length;
+  document.getElementById('route-km').textContent=km>0?km+' km':'–';
+
+  const list=document.getElementById('stop-list');
+  if(!stops.length){
+    list.innerHTML='<div class="empty"><div class="empty-icon">🗺️</div><p>Noch keine Stationen eingetragen</p></div>';
+  } else {
+    list.innerHTML=stops.map((s,i)=>{
+      const isLast=i===stops.length-1;
+      const distLabel=i===0?'Startpunkt':(s.ferry?'⛴️ Fähre ':'🚗 ')+(s.km?s.km+' km':'–');
+      return '<div class="stop-item">'
+        +'<div class="stop-connector">'
+        +'<div class="stop-dot'+(isLast?' stop-dot-active':'')+'"></div>'
+        +(!isLast?'<div class="stop-line"></div>':'')
+        +'</div>'
+        +'<div class="stop-body">'
+        +'<div class="stop-name">'+s.name+'</div>'
+        +'<div class="stop-meta">'+fmtDate(s.date)+' · '+distLabel+(s.note?' · '+s.note:'')+'</div>'
+        +'</div>'
+        +(s.addedBy===myName?'<button class="tx-del" onclick="delStop(\''+s.id+'\')">🗑</button>':'')
+        +'</div>';
+    }).join('');
+  }
+
+  if(document.getElementById('sec-route').classList.contains('active')) renderMap(stops);
+}
+
+function fillSettings(data){
+  if(!data) return;
+  document.getElementById('cfg-name').value=data.name;
+  document.getElementById('cfg-total').value=data.total;
+  document.getElementById('cfg-start').value=data.start;
+  document.getElementById('cfg-end').value=data.end;
+  const d=calcDayBudget(data.total,data.start,data.end);
+  document.getElementById('cfg-daily-display').textContent='€'+d.toFixed(2)+' / Tag (automatisch)';
+}
+</script>
+
+<style>
+:root{
+  --bg:#0F1A14;--bg2:#162019;--surface:#1E2D23;--surface2:#253028;
+  --border:rgba(255,255,255,0.07);
+  --green:#4CAF73;--amber:#E8A838;--red:#E05555;
+  --text:#EDF2EE;--text2:rgba(237,242,238,0.5);--text3:rgba(237,242,238,0.25);
+  --r:16px;--r-sm:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overscroll-behavior:none}
+body{font-family:'Instrument Sans',sans-serif;background:var(--bg);color:var(--text);max-width:480px;margin:0 auto;min-height:100vh}
+
+/* SCREENS */
+.screen{display:none;flex-direction:column;justify-content:center;min-height:100vh;padding:32px 22px 48px;background:var(--bg);overflow-y:auto}
+.logo{font-family:'Fraunces',serif;font-size:44px;font-weight:900;color:var(--green);margin-bottom:4px}
+.tagline{color:var(--text2);font-size:14px;margin-bottom:36px}
+.screen-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:12px}
+.screen-card h2{font-family:'Fraunces',serif;font-size:20px;margin-bottom:14px}
+.s-lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:5px;display:block}
+.s-inp{width:100%;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:15px;outline:none;margin-bottom:12px;transition:border-color .15s;-webkit-appearance:none}
+.s-inp:focus{border-color:var(--green)}
+.s-inp::placeholder{color:var(--text3)}
+.s-2col{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.s-2col .s-inp{margin-bottom:0}
+.primary-btn{width:100%;padding:13px;background:var(--green);color:#0F1A14;border:none;border-radius:var(--r-sm);font-family:'Instrument Sans',sans-serif;font-size:16px;font-weight:600;cursor:pointer;margin-top:6px}
+.primary-btn:disabled{opacity:.5}
+.secondary-btn{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:var(--r-sm);font-family:'Instrument Sans',sans-serif;font-size:14px;cursor:pointer;padding:10px 16px}
+.divider{text-align:center;color:var(--text3);font-size:13px;margin:4px 0}
+.person-tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.person-tag{background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:5px 12px;font-size:13px;display:flex;align-items:center;gap:5px;cursor:pointer}
+.person-tag .rm{font-size:10px;opacity:.4}
+.add-person-row{display:flex;gap:7px}
+.add-person-row .s-inp{margin-bottom:0;flex:1}
+
+/* APP */
+#app{display:none}
+.topbar{padding:14px 18px 10px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:80}
+.topbar-row{display:flex;justify-content:space-between;align-items:center}
+.trip-name{font-family:'Fraunces',serif;font-size:20px;font-weight:700}
+.trip-dates{font-size:11px;color:var(--text2);margin-top:2px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.icon-btn{background:var(--surface);border:none;width:34px;height:34px;border-radius:99px;color:var(--text);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.fx-strip{background:rgba(76,175,115,.08);border-bottom:1px solid var(--border);padding:5px 18px;font-size:11px;color:var(--green)}
+.nav{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg2);padding:0 6px 8px;gap:4px;border-bottom:1px solid var(--border)}
+.nav-btn{padding:7px 4px;border:none;border-radius:var(--r-sm);background:transparent;color:var(--text3);font-family:'Instrument Sans',sans-serif;font-size:11px;font-weight:500;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.nav-btn .ni{font-size:16px}
+.nav-btn.active{background:var(--surface);color:var(--green)}
+.section{display:none;padding:14px 14px 150px;animation:up .25s ease}
+.section.active{display:block}
+@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px}
+.card-label{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+
+/* HERO */
+.hero-remaining{font-family:'Fraunces',serif;font-size:54px;font-weight:900;line-height:1;letter-spacing:-2px;color:var(--green)}
+.hero-remaining.warn{color:var(--amber)}
+.hero-remaining.danger{color:var(--red)}
+.hero-remaining sup{font-size:22px;opacity:.5;vertical-align:super}
+.hero-meta{display:flex;justify-content:space-between;align-items:center;margin-top:5px}
+.hero-of{font-size:12px;color:var(--text2)}
+.status-pill{padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600}
+.pill-ok{background:rgba(76,175,115,.15);color:var(--green)}
+.pill-warn{background:rgba(232,168,56,.15);color:var(--amber)}
+
+/* BARS */
+.bar-section{margin:14px 0 4px}
+.bar-row{margin-bottom:9px}
+.bar-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.bar-top b{font-weight:500}
+.bar-track{height:7px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.bar-fill{height:100%;border-radius:99px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.fill-time{background:linear-gradient(90deg,#2E9E60,#4CAF73)}
+.fill-budget{background:linear-gradient(90deg,#C47A1A,#E8A838)}
+.fill-budget.over{background:linear-gradient(90deg,#b02020,#E05555)}
+.forecast-row{display:flex;justify-content:space-between;align-items:center;padding:10px 13px;background:var(--surface2);border-radius:var(--r-sm);margin-top:8px}
+.forecast-label{font-size:12px;color:var(--text2)}
+.forecast-val{font-family:'Fraunces',serif;font-size:19px;font-weight:700}
+.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
+.mini-stat{background:var(--surface2);border-radius:var(--r-sm);padding:11px 13px}
+.mini-num{font-family:'Fraunces',serif;font-size:21px;font-weight:700}
+.mini-lbl{font-size:10px;color:var(--text2);margin-top:2px}
+.day-budget-card{background:var(--surface2);border-radius:var(--r-sm);padding:12px 14px;display:flex;align-items:center;justify-content:space-between}
+.day-budget-card .left .title{font-size:14px;font-weight:500}
+.day-budget-card .left .sub{font-size:11px;color:var(--text2);margin-top:2px}
+.day-budget-card .right{font-family:'Fraunces',serif;font-size:24px;font-weight:700}
+.day-budget-card .right.over{color:var(--red)}
+.day-budget-card .right.ok{color:var(--green)}
+.burn-box{display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface2);border-radius:var(--r-sm)}
+.burn-emoji{font-size:28px;flex-shrink:0}
+.burn-title{font-size:14px;font-weight:500}
+.burn-sub{font-size:11px;color:var(--text2);margin-top:2px}
+.cat-bar-row{margin-bottom:11px}
+.cat-bar-header{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.cat-bar-header b{font-weight:500}
+.cat-bar-header span{color:var(--text2);font-size:11px}
+
+/* TRANSACTIONS */
+.tx{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.tx:last-child{border-bottom:none}
+.tx-icon{width:38px;height:38px;border-radius:var(--r-sm);background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.tx-body{flex:1;min-width:0}
+.tx-name{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx-meta{font-size:11px;color:var(--text2);margin-top:2px}
+.tx-right{text-align:right;flex-shrink:0}
+.tx-amt{font-family:'Fraunces',serif;font-size:16px;font-weight:700;color:var(--amber)}
+.tx-actions{display:flex;flex-direction:column;gap:2px;flex-shrink:0}
+.tx-edit,.tx-del{background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;padding:2px}
+.tx-edit:active{color:var(--green)}
+.tx-del:active{color:var(--red)}
+.edited-tag{font-size:9px;color:var(--text3);margin-left:5px;background:var(--surface2);padding:1px 5px;border-radius:4px}
+
+/* ROUTE */
+#route-map{height:280px;border-radius:var(--r-sm);margin-bottom:12px;background:var(--surface2);z-index:1}
+.route-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.route-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;text-align:center}
+.route-stat-num{font-family:'Fraunces',serif;font-size:30px;font-weight:900;color:var(--green)}
+.route-stat-lbl{font-size:11px;color:var(--text2);margin-top:2px}
+.stop-add-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.stop-add-form .s-inp{background:var(--surface2);margin-bottom:8px}
+.stop-add-form .s-inp:last-of-type{margin-bottom:0}
+.ferry-toggle{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border-radius:var(--r-sm);margin-bottom:10px;cursor:pointer;font-size:14px}
+.ferry-toggle input[type=checkbox]{width:18px;height:18px;accent-color:var(--green);cursor:pointer;flex-shrink:0}
+.stop-add-btn{width:100%;padding:12px;background:var(--green);color:#0F1A14;border:none;border-radius:var(--r-sm);font-family:'Instrument Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;margin-top:4px}
+.stop-add-btn:disabled{opacity:.5}
+.stop-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0}
+.stop-connector{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:12px;margin-top:3px}
+.stop-dot{width:12px;height:12px;border-radius:50%;background:var(--amber);border:2px solid var(--bg2);flex-shrink:0}
+.stop-dot-active{background:var(--green)}
+.stop-line{width:2px;flex:1;min-height:24px;background:var(--border);margin:3px 0}
+.stop-body{flex:1;min-width:0}
+.stop-name{font-size:14px;font-weight:500}
+.stop-meta{font-size:11px;color:var(--text2);margin-top:2px}
+.leaflet-popup-content-wrapper{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.leaflet-popup-tip{background:var(--surface)}
+.leaflet-popup-content{font-family:'Instrument Sans',sans-serif;font-size:13px}
+
+/* QUICK ADD */
+.qa-bar{position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;background:var(--bg2);border-top:1px solid var(--border);padding:9px 12px 20px;z-index:70}
+.qa-edit-hint{font-size:11px;color:var(--amber);margin-bottom:6px;display:none;align-items:center;gap:5px}
+.qa-row1{display:flex;gap:6px;margin-bottom:6px}
+.qa-row2{display:flex;gap:6px}
+.qa-input,.qa-select{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:13px;padding:9px 10px;outline:none;-webkit-appearance:none;min-width:0}
+.qa-input:focus,.qa-select:focus{border-color:var(--green)}
+.qa-input::placeholder{color:var(--text3)}
+.qa-input.qa-amt{max-width:86px;font-family:'Fraunces',serif;font-size:15px}
+.qa-select.qa-cur{max-width:72px;font-size:12px}
+.qa-select option{background:#1E2D23}
+.qa-add-btn{background:var(--green);border:none;border-radius:var(--r-sm);color:#0F1A14;font-size:19px;width:42px;height:42px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.qa-add-btn:active{transform:scale(.9)}
+.qa-cancel-btn{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text2);font-size:16px;width:42px;height:42px;cursor:pointer;flex-shrink:0;align-items:center;justify-content:center;display:none}
+
+/* SETTINGS */
+.form-group{margin-bottom:11px}
+.form-lbl{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:4px;display:block}
+.form-inp{width:100%;padding:10px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:14px;outline:none;-webkit-appearance:none}
+.form-inp:focus{border-color:var(--green)}
+.form-2col{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px}
+.save-btn{width:100%;padding:12px;background:var(--green);color:#0F1A14;border:none;border-radius:var(--r-sm);font-family:'Instrument Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;margin-top:4px}
+.danger-btn{width:100%;padding:11px;background:none;color:var(--red);border:1px solid rgba(224,85,85,.3);border-radius:var(--r-sm);font-family:'Instrument Sans',sans-serif;font-size:13px;cursor:pointer;margin-top:7px}
+.daily-display{font-size:12px;color:var(--green);padding:7px 11px;background:rgba(76,175,115,.1);border-radius:var(--r-sm);margin-bottom:11px}
+.code-box{background:var(--surface2);border-radius:var(--r-sm);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.code-val{font-family:'Fraunces',serif;font-size:26px;font-weight:700;letter-spacing:3px;color:var(--green)}
+.code-lbl{font-size:11px;color:var(--text2)}
+.copy-btn{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-size:12px;padding:7px 12px;cursor:pointer}
+
+/* MISC */
+.empty{text-align:center;padding:36px 20px;color:var(--text3)}
+.empty-icon{font-size:36px;margin-bottom:8px}
+.empty p{font-size:13px}
+.toast{position:fixed;top:72px;left:50%;transform:translateX(-50%) translateY(-14px);background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:9px 18px;font-size:13px;font-weight:500;opacity:0;pointer-events:none;transition:all .3s;z-index:300;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.confetti-bit{position:fixed;width:7px;height:7px;border-radius:2px;pointer-events:none;z-index:9999;animation:cfall 2.4s ease-in forwards}
+@keyframes cfall{0%{transform:translateY(-10px) rotate(0);opacity:1}100%{transform:translateY(110vh) rotate(800deg);opacity:0}}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<!-- HOME -->
+<div class="screen" id="screen-home">
+  <div class="logo">🌿 Budgio</div>
+  <div class="tagline">Dein Reisebegleiter für Skandinavien</div>
+  <div class="screen-card">
+    <h2>✈️ Neue Reise erstellen</h2>
+    <label class="s-lbl">Reisename</label>
+    <input class="s-inp" id="s-name" placeholder="z.B. Skandinavien 2026" />
+    <label class="s-lbl">Gesamtbudget (€)</label>
+    <input class="s-inp" id="s-total" type="number" placeholder="3000" inputmode="decimal" />
+    <div class="s-2col">
+      <div><label class="s-lbl">Start</label><input class="s-inp" id="s-start" type="date" /></div>
+      <div><label class="s-lbl">Ende</label><input class="s-inp" id="s-end" type="date" /></div>
+    </div>
+    <label class="s-lbl">Dein Name</label>
+    <input class="s-inp" id="s-creator" placeholder="z.B. Papa" />
+    <label class="s-lbl">Reisende</label>
+    <div class="person-tags" id="setup-persons"></div>
+    <div class="add-person-row" style="margin-bottom:4px">
+      <input class="s-inp" id="s-pname" placeholder="Name" style="margin-bottom:0" />
+      <input class="s-inp" id="s-pemoji" placeholder="😀" style="margin-bottom:0;width:54px;text-align:center" maxlength="2" />
+      <button class="secondary-btn" onclick="addSetupPerson()">+</button>
+    </div>
+    <button class="primary-btn" id="btn-create" onclick="createTrip()">✈️ Reise erstellen</button>
+  </div>
+  <div class="divider">— oder —</div>
+  <div class="screen-card">
+    <h2>🔑 Reise beitreten</h2>
+    <label class="s-lbl">Reise-Code</label>
+    <input class="s-inp" id="j-code" placeholder="z.B. SKAND926" style="letter-spacing:3px;font-family:'Fraunces',serif;font-size:20px" />
+    <label class="s-lbl">Dein Name</label>
+    <input class="s-inp" id="j-name" placeholder="z.B. Mama" />
+    <button class="primary-btn" id="btn-join" onclick="joinTrip()">Beitreten →</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-row">
+      <div>
+        <div class="trip-name" id="hdr-name">Mein Urlaub</div>
+        <div class="trip-dates" id="hdr-dates"></div>
+      </div>
+      <div class="topbar-right">
+        <span id="conn-status">🟡</span>
+        <button class="icon-btn" onclick="switchTab('settings')">⚙️</button>
+      </div>
+    </div>
+  </div>
+  <div class="fx-strip" id="fx-bar">Kurse werden geladen…</div>
+  <div class="nav">
+    <button class="nav-btn active" onclick="switchTab('overview')"><span class="ni">📊</span>Budget</button>
+    <button class="nav-btn" onclick="switchTab('route')"><span class="ni">🗺️</span>Route</button>
+    <button class="nav-btn" onclick="switchTab('today')"><span class="ni">☀️</span>Heute</button>
+    <button class="nav-btn" onclick="switchTab('history')"><span class="ni">📋</span>Verlauf</button>
+  </div>
+
+  <!-- BUDGET -->
+  <div class="section active" id="sec-overview">
+    <div class="card">
+      <div class="card-label">Verbleibendes Budget</div>
+      <div class="hero-remaining" id="hero-rem"><sup>€</sup><span id="hero-num">0</span></div>
+      <div class="hero-meta">
+        <div class="hero-of" id="hero-of">von €0</div>
+        <div class="status-pill pill-ok" id="status-pill">–</div>
+      </div>
+      <div class="bar-section">
+        <div class="bar-row">
+          <div class="bar-top"><b>⏱ Zeitfortschritt</b><span id="time-pct">0%</span></div>
+          <div class="bar-track"><div class="bar-fill fill-time" id="bar-time" style="width:0%"></div></div>
+        </div>
+        <div class="bar-row" style="margin-bottom:0">
+          <div class="bar-top"><b>💸 Budgetverbrauch</b><span id="budget-pct">0%</span></div>
+          <div class="bar-track"><div class="bar-fill fill-budget" id="bar-budget" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="forecast-row">
+        <div class="forecast-label">📈 Prognose Endstand</div>
+        <div class="forecast-val" id="forecast">–</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">Tagesbudget</div>
+      <div class="day-budget-card">
+        <div class="left"><div class="title">Heute ausgegeben</div><div class="sub" id="day-sub">von €0</div></div>
+        <div class="right ok" id="day-spent-num">€0</div>
+      </div>
+      <div class="mini-grid">
+        <div class="mini-stat"><div class="mini-num" id="stat-avg">€0</div><div class="mini-lbl">∅ pro Tag</div></div>
+        <div class="mini-stat"><div class="mini-num" id="stat-ideal">€0</div><div class="mini-lbl">Ideal/Tag ab heute</div></div>
+        <div class="mini-stat"><div class="mini-num" id="stat-days">0</div><div class="mini-lbl">Tage verbleibend</div></div>
+        <div class="mini-stat"><div class="mini-num" id="stat-total-spent">€0</div><div class="mini-lbl">Gesamt ausgegeben</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">Burn Rate</div>
+      <div class="burn-box">
+        <div class="burn-emoji" id="burn-emoji">📊</div>
+        <div><div class="burn-title" id="burn-title">Noch keine Ausgaben</div><div class="burn-sub" id="burn-sub">Füge deine erste Ausgabe hinzu</div></div>
+      </div>
+    </div>
+    <div class="card"><div class="card-label">Kategorien</div><div id="cat-overview"></div></div>
+  </div>
+
+  <!-- ROUTE -->
+  <div class="section" id="sec-route">
+    <div class="route-stats">
+      <div class="route-stat"><div class="route-stat-num" id="route-stops">0</div><div class="route-stat-lbl">Stationen</div></div>
+      <div class="route-stat"><div class="route-stat-num" id="route-km">–</div><div class="route-stat-lbl">Gefahrene km</div></div>
+    </div>
+    <div id="route-map"></div>
+    <div class="stop-add-form">
+      <div class="card-label" style="margin-bottom:10px">📍 Station hinzufügen</div>
+      <input class="s-inp" id="stop-name" placeholder="Ortsname (z.B. Kopenhagen, Dänemark)" />
+      <input class="s-inp" id="stop-note" placeholder="Notiz, z.B. Campingplatz Meerblick" />
+      <label class="ferry-toggle">
+        <input type="checkbox" id="stop-ferry" />
+        <span>⛴️ Diese Etappe per Fähre (Luftlinie statt Straßenroute)</span>
+      </label>
+      <button class="stop-add-btn" id="stop-add-btn" onclick="addStop()">Station hinzufügen</button>
+    </div>
+    <div class="card">
+      <div class="card-label">Streckenverlauf</div>
+      <div id="stop-list"><div class="empty"><div class="empty-icon">🗺️</div><p>Noch keine Stationen eingetragen</p></div></div>
+    </div>
+  </div>
+
+  <!-- HEUTE -->
+  <div class="section" id="sec-today">
+    <div class="card">
+      <div class="card-label" id="today-label">Heute</div>
+      <div class="day-budget-card" style="margin-bottom:12px">
+        <div class="left"><div class="title" id="today-status-title">Noch nichts</div><div class="sub" id="today-status-sub"></div></div>
+        <div class="right" id="today-remain-num">€0</div>
+      </div>
+      <div id="today-tx-list"><div class="empty"><div class="empty-icon">☀️</div><p>Noch keine Ausgaben heute</p></div></div>
+    </div>
+  </div>
+
+  <!-- VERLAUF -->
+  <div class="section" id="sec-history">
+    <div class="card"><div class="card-label">Alle Ausgaben</div>
+      <div id="all-tx-list"><div class="empty"><div class="empty-icon">🧾</div><p>Noch keine Ausgaben</p></div></div>
+    </div>
+  </div>
+
+  <!-- EINSTELLUNGEN -->
+  <div class="section" id="sec-settings">
+    <div class="card">
+      <div class="card-label">Reise-Code teilen</div>
+      <div class="code-box">
+        <div><div class="code-lbl">Dein Reise-Code</div><div class="code-val" id="settings-code">–</div></div>
+        <button class="copy-btn" onclick="copyCode()">📋 Kopieren</button>
+      </div>
+      <p style="font-size:12px;color:var(--text2)">Teile diesen Code mit deiner Familie – alle sehen alles in Echtzeit.</p>
+    </div>
+    <div class="card">
+      <div class="card-label">Reise bearbeiten</div>
+      <div class="form-group"><label class="form-lbl">Reisename</label><input class="form-inp" id="cfg-name" /></div>
+      <div class="form-group"><label class="form-lbl">Gesamtbudget (€)</label><input class="form-inp" id="cfg-total" type="number" inputmode="decimal" /></div>
+      <div class="form-2col">
+        <div><label class="form-lbl">Start</label><input class="form-inp" id="cfg-start" type="date" /></div>
+        <div><label class="form-lbl">Ende</label><input class="form-inp" id="cfg-end" type="date" /></div>
+      </div>
+      <div class="daily-display" id="cfg-daily-display">Tagesbudget wird automatisch berechnet</div>
+      <button class="save-btn" onclick="saveSettings()">Änderungen speichern</button>
+      <button class="danger-btn" onclick="leaveTrip()">Reise verlassen</button>
+    </div>
+    <div class="card">
+      <div class="card-label">Wechselkurse (live)</div>
+      <div style="font-size:13px;color:var(--text2);line-height:2.2">
+        <div>🇩🇰 1 € = <b id="fx-dkk" style="color:var(--text)">–</b> DKK</div>
+        <div>🇳🇴 1 € = <b id="fx-nok" style="color:var(--text)">–</b> NOK</div>
+        <div>🇸🇪 1 € = <b id="fx-sek" style="color:var(--text)">–</b> SEK</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUICK ADD -->
+<div class="qa-bar" id="qa-bar" style="display:none">
+  <div class="qa-edit-hint" id="qa-edit-hint">✏️ Bearbeitungsmodus · <span style="text-decoration:underline;cursor:pointer" onclick="cancelEdit()">abbrechen</span></div>
+  <div class="qa-row1">
+    <select class="qa-select" id="qa-cat" style="flex:2"></select>
+  </div>
+  <div class="qa-row2">
+    <input class="qa-input" id="qa-desc" placeholder="Beschreibung (optional)" />
+    <input class="qa-input qa-amt" id="qa-amt" type="number" placeholder="0,00" inputmode="decimal" step="0.01" />
+    <select class="qa-select qa-cur" id="qa-currency">
+      <option value="EUR">€ EUR</option>
+      <option value="DKK">DKK</option>
+      <option value="NOK">NOK</option>
+      <option value="SEK">SEK</option>
+    </select>
+    <button class="qa-add-btn" id="qa-add-btn" onclick="addExpense()">＋</button>
+    <button class="qa-cancel-btn" id="qa-cancel-btn" onclick="cancelEdit()">✕</button>
+  </div>
+</div>
+</body>
+</html>
   {id:'dog',        emoji:'🐾', name:'Hund'},
   {id:'health',     emoji:'💊', name:'Apotheke & Gesundheit'},
   {id:'shop',       emoji:'🛍️', name:'Shopping'},
