@@ -331,7 +331,7 @@ function updateFXDisplay(){
   renderFXTable();
 }
 
-function renderFXTable(){
+window.renderFXTable=function(){
   const tbody=document.getElementById('fx-tbody');
   if(!tbody) return;
   // Always show all 3 currencies in Today tab
@@ -959,7 +959,13 @@ window.switchTab=function(tab){
       renderMap(getSortedStops(window._tripData?.stops||[]));
     },120);
   }
-  if(tab==='today') renderFXTable();
+  if(tab==='today'){
+    renderFXTable();
+    if(window._tripData) renderToday(window._tripData);
+  }
+  if(tab==='history'){
+    if(window._tripData) renderHistory(window._tripData);
+  }
 };
 
 // ══ RENDER ═══════════════════════════════════════════════════════
