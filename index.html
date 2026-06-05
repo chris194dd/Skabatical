@@ -374,24 +374,22 @@ async function detectSessionCurrency(){
 }
 
 // ── Währungsrechner ───────────────────────────────────────────────
-window.convertCurrency=function(direction){
-  const amtEl=document.getElementById('conv-amount');
-  const fromSel=document.getElementById('conv-from');
-  const toSel=document.getElementById('conv-to');
+window.convertCurrency=function(){
+  const amt=parseFloat(document.getElementById('conv-amount').value);
+  const from=document.getElementById('conv-from').value;
+  const to=document.getElementById('conv-to').value;
   const resultEl=document.getElementById('conv-result');
   const hintEl=document.getElementById('conv-rate-hint');
-  const amt=parseFloat(amtEl.value);
-  const from=fromSel.value;
-  const to=toSel.value;
-  if(!amt||isNaN(amt)){resultEl.textContent='–';hintEl.textContent='';return;}
-  // Convert via EUR as base
-  const inEUR=from==='EUR'?amt:amt/FX[from];
-  const result=to==='EUR'?inEUR:inEUR*FX[to];
-  const sym={EUR:'€',DKK:'kr',NOK:'kr',SEK:'kr'};
+  if(!amt||isNaN(amt)||amt<=0){resultEl.textContent='–';hintEl.textContent='';return;}
+  // Convert: everything via EUR as base
+  const inEUR=(from==='EUR')?amt:(amt/FX[from]);
+  const result=(to==='EUR')?inEUR:(inEUR*FX[to]);
+  const sym={EUR:'€ EUR',DKK:'DKK',NOK:'NOK',SEK:'SEK'};
   resultEl.textContent=result.toFixed(2)+' '+sym[to];
-  // Rate hint
-  const rate1=from==='EUR'?FX[to]:(to==='EUR'?1/FX[from]:FX[to]/FX[from]);
-  hintEl.textContent=`1 ${from} = ${rate1.toFixed(4)} ${to}`;
+  // Rate hint: 1 unit of from = ? to
+  const oneInEUR=(from==='EUR')?1:(1/FX[from]);
+  const rate=(to==='EUR')?oneInEUR:(oneInEUR*FX[to]);
+  hintEl.textContent='1 '+from+' = '+rate.toFixed(4)+' '+to;
 };
 
 window.swapCurrencies=function(){
@@ -400,7 +398,9 @@ window.swapCurrencies=function(){
   const tmp=fromSel.value;
   fromSel.value=toSel.value;
   toSel.value=tmp;
-  convertCurrency('from');
+  const btn=document.getElementById('swap-btn');
+  if(btn){btn.style.transform='rotate(180deg)';setTimeout(()=>btn.style.transform='',300);}
+  convertCurrency();
 };
 
 function toEUR(a,cur){return a/(FX[cur]||1);}
