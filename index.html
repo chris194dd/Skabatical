@@ -365,10 +365,43 @@ async function detectSessionCurrency(){
       if(COUNTRY_CURRENCY[cc]){
         sessionCurrency=COUNTRY_CURRENCY[cc];
         updateFXDisplay();
+        // Pre-select in converter: EUR → detected currency
+        const toSel=document.getElementById('conv-to');
+        if(toSel) toSel.value=sessionCurrency.code;
       }
     }catch(e){}
   },()=>{},{timeout:8000,enableHighAccuracy:false});
 }
+
+// ── Währungsrechner ───────────────────────────────────────────────
+window.convertCurrency=function(direction){
+  const amtEl=document.getElementById('conv-amount');
+  const fromSel=document.getElementById('conv-from');
+  const toSel=document.getElementById('conv-to');
+  const resultEl=document.getElementById('conv-result');
+  const hintEl=document.getElementById('conv-rate-hint');
+  const amt=parseFloat(amtEl.value);
+  const from=fromSel.value;
+  const to=toSel.value;
+  if(!amt||isNaN(amt)){resultEl.textContent='–';hintEl.textContent='';return;}
+  // Convert via EUR as base
+  const inEUR=from==='EUR'?amt:amt/FX[from];
+  const result=to==='EUR'?inEUR:inEUR*FX[to];
+  const sym={EUR:'€',DKK:'kr',NOK:'kr',SEK:'kr'};
+  resultEl.textContent=result.toFixed(2)+' '+sym[to];
+  // Rate hint
+  const rate1=from==='EUR'?FX[to]:(to==='EUR'?1/FX[from]:FX[to]/FX[from]);
+  hintEl.textContent=`1 ${from} = ${rate1.toFixed(4)} ${to}`;
+};
+
+window.swapCurrencies=function(){
+  const fromSel=document.getElementById('conv-from');
+  const toSel=document.getElementById('conv-to');
+  const tmp=fromSel.value;
+  fromSel.value=toSel.value;
+  toSel.value=tmp;
+  convertCurrency('from');
+};
 
 function toEUR(a,cur){return a/(FX[cur]||1);}
 
@@ -775,6 +808,8 @@ window.locateMe=function(){
       if(COUNTRY_CURRENCY[cc]&&!sessionCurrency){
         sessionCurrency=COUNTRY_CURRENCY[cc];
         updateFXDisplay();
+        const toSel=document.getElementById('conv-to');
+        if(toSel) toSel.value=sessionCurrency.code;
       }
       const place=d.address?.city||d.address?.town||d.address?.village||d.address?.county||'Aktueller Standort';
       const country=d.address?.country||'';
@@ -1298,14 +1333,24 @@ function fillSettings(data){
       </table>
       <div class="fx-updated" id="fx-updated-time"></div>
     </div>
+  <!-- CASH -->
+  <div class="section" id="sec-today">
+    <div class="card">
+      <div class="card-label">Wechselkurse (live)</div>
+      <table class="fx-table">
+        <thead id="fx-thead"><tr><th></th><th>Währung</th><th style="text-align:right">1 € =</th><th style="text-align:right">100 kr =</th></tr></thead>
+        <tbody id="fx-tbody"></tbody>
+      </table>
+      <div class="fx-updated" id="fx-updated-time"></div>
+    </div>
     <div class="card">
       <div class="card-label">Währungsrechner</div>
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+      <div style="display:flex;gap:8px;margin-bottom:10px">
         <input id="conv-amount" type="number" inputmode="decimal" placeholder="0,00"
-          style="flex:1;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Fraunces',serif;font-size:22px;outline:none;-webkit-appearance:none;transition:border-color .15s"
-          oninput="convertCurrency('from')" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'" />
-        <select id="conv-from" onchange="convertCurrency('from')"
-          style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:14px;outline:none;-webkit-appearance:none;cursor:pointer">
+          style="flex:1;padding:10px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Fraunces',serif;font-size:17px;outline:none;-webkit-appearance:none;min-width:0;transition:border-color .15s"
+          oninput="convertCurrency()" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'" />
+        <select id="conv-from" onchange="convertCurrency()"
+          style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:14px;outline:none;-webkit-appearance:none;cursor:pointer;flex-shrink:0">
           <option value="EUR">€ EUR</option>
           <option value="DKK">🇩🇰 DKK</option>
           <option value="NOK">🇳🇴 NOK</option>
@@ -1314,27 +1359,31 @@ function fillSettings(data){
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
         <div style="flex:1;height:1px;background:var(--border)"></div>
-        <button onclick="swapCurrencies()"
-          style="background:var(--surface2);border:1px solid var(--border);border-radius:99px;width:34px;height:34px;font-size:16px;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .2s"
-          onmousedown="this.style.transform='rotate(180deg)'" onmouseup="this.style.transform=''">⇅</button>
+        <button id="swap-btn" onclick="swapCurrencies()"
+          style="background:var(--surface2);border:1px solid var(--border);border-radius:99px;width:32px;height:32px;font-size:15px;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .3s">⇅</button>
         <div style="flex:1;height:1px;background:var(--border)"></div>
       </div>
-      <div style="display:flex;gap:8px;align-items:center">
+      <div style="display:flex;gap:8px;margin-bottom:8px">
         <div id="conv-result"
-          style="flex:1;padding:12px 14px;background:var(--surface2);border-radius:var(--r-sm);font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--green);min-height:50px;display:flex;align-items:center">
+          style="flex:1;padding:10px 13px;background:var(--surface2);border-radius:var(--r-sm);font-family:'Fraunces',serif;font-size:17px;font-weight:700;color:var(--green);min-height:44px;display:flex;align-items:center;min-width:0">
           –
         </div>
-        <select id="conv-to" onchange="convertCurrency('from')"
-          style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:14px;outline:none;-webkit-appearance:none;cursor:pointer">
+        <select id="conv-to" onchange="convertCurrency()"
+          style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:14px;outline:none;-webkit-appearance:none;cursor:pointer;flex-shrink:0">
           <option value="EUR">€ EUR</option>
           <option value="DKK">🇩🇰 DKK</option>
           <option value="NOK">🇳🇴 NOK</option>
           <option value="SEK">🇸🇪 SEK</option>
         </select>
       </div>
-      <div id="conv-rate-hint" style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center"></div>
+      <div id="conv-rate-hint" style="font-size:11px;color:var(--text3);text-align:center"></div>
     </div>
-      <div class="day-budget-card" style="margin-bottom:12px"><div class="left"><div class="title" id="today-status-title">Noch nichts</div><div class="sub" id="today-status-sub"></div></div><div class="right" id="today-remain-num">€0</div></div>
+    <div class="card">
+      <div class="card-label" id="today-label">Heute</div>
+      <div class="day-budget-card" style="margin-bottom:12px">
+        <div class="left"><div class="title" id="today-status-title">Noch nichts ausgegeben</div><div class="sub" id="today-status-sub"></div></div>
+        <div class="right" id="today-remain-num">€0</div>
+      </div>
       <div id="today-tx-list"></div>
     </div>
   </div>
