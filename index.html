@@ -1510,6 +1510,58 @@
             transform: translateY(110vh) rotate(800deg);
             opacity: 0
         }
+    }/* WEATHER */
+
+    .weather-strip {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: none
+    }
+
+    .weather-strip::-webkit-scrollbar {
+        display: none
+    }
+
+    .weather-slot {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        flex-shrink: 0;
+        background: var(--surface2);
+        border-radius: var(--r-sm);
+        padding: 10px 10px 8px;
+        min-width: 58px
+    }
+
+    .ws-time {
+        font-size: 10px;
+        color: var(--text3);
+        font-weight: 600;
+        letter-spacing: .04em
+    }
+
+    .ws-icon {
+        font-size: 22px;
+        line-height: 1
+    }
+
+    .ws-temp {
+        font-family: 'Fraunces', serif;
+        font-size: 16px;
+        font-weight: 700
+    }
+
+    .ws-precip {
+        font-size: 10px;
+        font-weight: 600
+    }
+
+    .ws-wind {
+        font-size: 9px;
+        color: var(--text3)
     }
     </style>
 
@@ -1700,7 +1752,7 @@
                 minute: '2-digit'
             });
     }
-    // Detect country from GPS and set sessionCurrency
+    // Detect country from GPS and set sessionCurrency + load weather
     async function detectSessionCurrency() {
         if (!navigator.geolocation)
             return;
@@ -1713,17 +1765,135 @@
                 if (COUNTRY_CURRENCY[cc]) {
                     sessionCurrency = COUNTRY_CURRENCY[cc];
                     updateFXDisplay();
-                    // Pre-select in converter: detected currency → EUR
                     const fromSel = document.getElementById('conv-from');
                     if (fromSel)
                         fromSel.value = sessionCurrency.code;
                 }
+                // Weather
+                const place = d.address?.city || d.address?.town || d.address?.village || d.address?.county || '';
+                await loadWeather(lat, lng, place);
             } catch (e) {}
         }, () => {}, {
             timeout: 8000,
             enableHighAccuracy: false
         });
     }
+
+    // Weather codes → icon + label
+    function wmoIcon(code) {
+        if (code === 0)
+            return {
+                icon: '☀️',
+                label: 'Klar'
+            };
+        if (code <= 2)
+            return {
+                icon: '🌤️',
+                label: 'Leicht bewölkt'
+            };
+        if (code <= 3)
+            return {
+                icon: '☁️',
+                label: 'Bewölkt'
+            };
+        if (code <= 49)
+            return {
+                icon: '🌫️',
+                label: 'Nebel'
+            };
+        if (code <= 59)
+            return {
+                icon: '🌦️',
+                label: 'Nieselregen'
+            };
+        if (code <= 69)
+            return {
+                icon: '🌧️',
+                label: 'Regen'
+            };
+        if (code <= 79)
+            return {
+                icon: '❄️',
+                label: 'Schnee'
+            };
+        if (code <= 84)
+            return {
+                icon: '🌦️',
+                label: 'Schauer'
+            };
+        if (code <= 94)
+            return {
+                icon: '⛈️',
+                label: 'Gewitter'
+            };
+        return {
+            icon: '⛈️',
+            label: 'Unwetter'
+        };
+    }
+
+    async function loadWeather(lat, lng, placeName) {
+        const el = document.getElementById('weather-strip');
+        const loc = document.getElementById('weather-location');
+        const updated = document.getElementById('weather-updated');
+        if (!el)
+            return;
+        el.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:8px">Wetter wird geladen…</div>';
+        if (loc)
+            loc.textContent = placeName || 'Aktueller Standort';
+        try {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}`
+            + `&hourly=temperature_2m,precipitation_probability,weathercode,windspeed_10m`
+            + `&timezone=auto&forecast_days=2`;
+            const r = await fetch(url);
+            const d = await r.json();
+            const now = new Date();
+            const hours = d.hourly.time.map((t, i) => ({
+                time: new Date(t),
+                temp: d.hourly.temperature_2m[i],
+                precip: d.hourly.precipitation_probability[i],
+                code: d.hourly.weathercode[i],
+                wind: d.hourly.windspeed_10m[i],
+            }));
+            // Filter: current hour + next 23 hours
+            const nowH = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours());
+            const relevant = hours.filter(h => h.time >= nowH).slice(0, 24);
+            // Show every 3 hours = 8 slots
+            const slots = relevant.filter((_, i) => i % 3 === 0);
+            el.innerHTML = slots.map((h, i) => {
+                const w = wmoIcon(h.code);
+                const label = i === 0 ? 'Jetzt' : h.time.toLocaleTimeString('de', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                const precipColor = h.precip > 60 ? 'var(--blue)' : h.precip > 30 ? 'var(--amber)' : 'var(--text3)';
+                return `<div class="weather-slot">
+        <div class="ws-time">${label}</div>
+        <div class="ws-icon">${w.icon}</div>
+        <div class="ws-temp">${Math.round(h.temp)}°</div>
+        <div class="ws-precip" style="color:${precipColor}">${h.precip}%</div>
+        <div class="ws-wind">${Math.round(h.wind)} km/h</div>
+      </div>`
+                ;
+            }).join('');
+            if (updated)
+                updated.textContent = 'Stand: ' + now.toLocaleTimeString('de', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+        } catch (e) {
+            el.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:8px">Wetter nicht verfügbar</div>';
+        }
+    }
+
+    window.refreshWeather = function() {
+        const btn = document.getElementById('weather-refresh-btn');
+        if (btn) {
+            btn.style.transform = 'rotate(360deg)';
+            setTimeout(() => btn.style.transform = '', 500);
+        }
+        detectSessionCurrency();
+    };
 
     // ── Währungsrechner ───────────────────────────────────────────────
     window.convertCurrency = function() {
@@ -2464,6 +2634,8 @@
                     if (fromSel2)
                         fromSel2.value = sessionCurrency.code;
                 }
+                // Also refresh weather when GPS button used
+                await loadWeather(lat, lng, place);
                 const place = d.address?.city || d.address?.town || d.address?.village || d.address?.county || 'Aktueller Standort';
                 const country = d.address?.country || '';
                 const inp = document.getElementById('stop-name');
@@ -3283,8 +3455,8 @@
                 Route
             </button>
             <button class="nav-btn" onclick="switchTab('today')">
-                <span class="ni">💱</span>
-                Cash
+                <span class="ni">🌐</span>
+                Jetzt
             </button>
             <button class="nav-btn" onclick="switchTab('history')">
                 <span class="ni">📋</span>
@@ -3417,6 +3589,26 @@
 
         <!-- CASH -->
         <div class="section" id="sec-today">
+            <div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                    <div>
+                        <div class="card-label" style="margin-bottom:2px">🌤️ Wetter · nächste 24h</div>
+                        <div id="weather-location" style="font-size:12px;color:var(--text2)">Standort wird ermittelt…</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px">
+                        <div id="weather-updated" style="font-size:10px;color:var(--text3)"></div>
+                        <button id="weather-refresh-btn" onclick="refreshWeather()" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--text2);transition:transform .5s;padding:2px">🔄</button>
+                    </div>
+                </div>
+                <div class="weather-strip" id="weather-strip">
+                    <div style="color:var(--text3);font-size:12px;padding:8px">GPS-Erlaubnis nötig – tippe 🔄 um Wetter zu laden</div>
+                </div>
+                <div style="margin-top:8px;display:flex;gap:16px;font-size:10px;color:var(--text3)">
+                    <span>🌡️ Temperatur</span>
+                    <span style="color:var(--blue)">💧 Regenwahrsch.</span>
+                    <span>💨 Wind km/h</span>
+                </div>
+            </div>
             <div class="card">
                 <div class="card-label">Wechselkurse (live)</div>
                 <table class="fx-table">
