@@ -59,11 +59,175 @@
         margin: 0 auto;
         min-height: 100vh;
         transition: background .2s, color .2s
-    }/* SCREENS */
+    }/* ── HOME / ARCHIVE ──────────────────────────────────────── */
+    .home-screen {
+        display: none;
+        flex-direction: column;
+        min-height: 100vh;
+        background: var(--bg)
+    }
+
+    .home-header {
+        padding: 32px 22px 20px;
+        background: var(--bg2);
+        border-bottom: 1px solid var(--border)
+    }
+
+    .home-logo {
+        font-family: 'Fraunces', serif;
+        font-size: 36px;
+        font-weight: 900;
+        color: var(--green)
+    }
+
+    .home-sub {
+        font-size: 13px;
+        color: var(--text2);
+        margin-top: 2px
+    }
+
+    .home-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px 16px 40px
+    }
+
+    .trip-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        padding: 16px 18px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: border-color .15s;
+        display: flex;
+        align-items: center;
+        gap: 14px
+    }
+
+    .trip-card:active {
+        border-color: var(--green)
+    }
+
+    .trip-card-icon {
+        font-size: 28px;
+        flex-shrink: 0
+    }
+
+    .trip-card-body {
+        flex: 1;
+        min-width: 0
+    }
+
+    .trip-card-name {
+        font-family: 'Fraunces', serif;
+        font-size: 17px;
+        font-weight: 700;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap
+    }
+
+    .trip-card-meta {
+        font-size: 11px;
+        color: var(--text2);
+        margin-top: 3px
+    }
+
+    .trip-card-badge {
+        font-size: 10px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 99px;
+        flex-shrink: 0
+    }
+
+    .badge-active {
+        background: rgba(76, 175, 115, .15);
+        color: var(--green)
+    }
+
+    .badge-archived {
+        background: rgba(140, 140, 140, .12);
+        color: var(--text3)
+    }
+
+    .home-section-label {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+        color: var(--text3);
+        margin: 16px 0 8px
+    }
+
+    .home-action-btn {
+        width: 100%;
+        padding: 13px;
+        background: var(--green);
+        color: #0F1A14;
+        border: none;
+        border-radius: var(--r-sm);
+        font-family: 'Instrument Sans', sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: 8px
+    }
+
+    .home-secondary-btn {
+        width: 100%;
+        padding: 12px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-sm);
+        font-family: 'Instrument Sans', sans-serif;
+        font-size: 14px;
+        color: var(--text);
+        cursor: pointer
+    }/* ── TRIP SHEET (slide-up) ───────────────────────────────── */
+    .sheet-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, .55);
+        z-index: 150;
+        display: none;
+        max-width: 480px;
+        margin: 0 auto
+    }
+
+    .sheet {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--surface);
+        border-radius: var(--r) var(--r) 0 0;
+        padding: 24px 20px 40px;
+        max-height: 85vh;
+        overflow-y: auto
+    }
+
+    .sheet-title {
+        font-family: 'Fraunces', serif;
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center
+    }
+
+    .sheet-close {
+        background: none;
+        border: none;
+        font-size: 22px;
+        color: var(--text2);
+        cursor: pointer
+    }/* ── SCREEN FORMS ────────────────────────────────────────── */
     .screen {
         display: none;
         flex-direction: column;
-        justify-content: center;
         min-height: 100vh;
         padding: 32px 22px 48px;
         background: var(--bg);
@@ -209,7 +373,44 @@
     .add-person-row .s-inp {
         margin-bottom: 0;
         flex: 1
-    }/* APP SHELL */
+    }/* Currency picker */
+    .currency-picker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-bottom: 4px
+    }
+
+    .cur-chip {
+        padding: 6px 12px;
+        border-radius: 99px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: var(--surface2);
+        color: var(--text2);
+        transition: all .15s;
+        user-select: none
+    }
+
+    .cur-chip.selected {
+        background: var(--green);
+        color: #0F1A14;
+        border-color: var(--green)
+    }
+
+    .cur-chip.disabled {
+        opacity: .3;
+        cursor: not-allowed
+    }
+
+    .cur-hint {
+        font-size: 11px;
+        color: var(--text3);
+        margin-top: 4px;
+        margin-bottom: 12px
+    }/* ── APP SHELL ───────────────────────────────────────────── */
     #app {
         display: none
     }
@@ -229,10 +430,26 @@
         align-items: center
     }
 
-    .trip-name {
+    .trip-name-btn {
         font-family: 'Fraunces', serif;
-        font-size: 19px;
-        font-weight: 700
+        font-size: 17px;
+        font-weight: 700;
+        background: none;
+        border: none;
+        color: var(--text);
+        cursor: pointer;
+        text-align: left;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        gap: 5px
+    }
+
+    .trip-name-btn::after {
+        content: '⌄';
+        font-size: 13px;
+        opacity: .4;
+        font-family: sans-serif
     }
 
     .trip-dates {
@@ -278,6 +495,21 @@
         to {
             transform: rotate(360deg)
         }
+    }
+
+    .archived-banner {
+        background: rgba(232, 168, 56, .12);
+        border-bottom: 1px solid rgba(232, 168, 56, .25);
+        padding: 6px 18px;
+        font-size: 12px;
+        color: var(--amber);
+        display: none;
+        align-items: center;
+        gap: 6px
+    }
+
+    .archived-banner.show {
+        display: flex
     }
 
     .offline-banner {
@@ -375,7 +607,7 @@
         text-transform: uppercase;
         color: var(--text3);
         margin-bottom: 10px
-    }/* HERO */
+    }/* ── HERO ─────────────────────────────────────────────── */
     .hero-remaining {
         font-family: 'Fraunces', serif;
         font-size: 54px;
@@ -387,7 +619,7 @@
     }
 
     .hero-remaining.warn {
-        color: var(--amber)
+        color:var(--amber)
     }
 
     .hero-remaining.danger {
@@ -427,14 +659,9 @@
     .pill-warn {
         background: rgba(232, 168, 56, .15);
         color: var(--amber)
-    }
-
-    .pill-bad {
-        background: rgba(224, 85, 85, .15);
-        color: var(--red)
-    }/* BARS */
+    }/* ── BARS ─────────────────────────────────────────────── */
     .bar-section {
-        margin: 14px 0 4px
+        margin:14px 0 4px
     }
 
     .bar-row {
@@ -445,7 +672,7 @@
         display: flex;
         justify-content: space-between;
         font-size: 12px;
-        margin-bottom: 4px
+        margin-bottom:4px
     }
 
     .bar-top b {
@@ -489,7 +716,7 @@
 
     .forecast-label {
         font-size: 12px;
-        color: var(--text2)
+        color:var(--text2)
     }
 
     .forecast-val {
@@ -514,8 +741,7 @@
     .mini-num {
         font-family: 'Fraunces', serif;
         font-size: 21px;
-        font-weight: 700;
-        transition: color .3s
+        font-weight: 700
     }
 
     .mini-lbl {
@@ -547,12 +773,11 @@
     .day-budget-card .right {
         font-family: 'Fraunces', serif;
         font-size: 24px;
-        font-weight: 700;
-        transition: color .3s
+        font-weight: 700
     }
 
     .day-budget-card .right.over {
-        color: var(--red)
+        color:var(--red)
     }
 
     .day-budget-card .right.ok {
@@ -570,7 +795,7 @@
 
     .burn-emoji {
         font-size: 28px;
-        flex-shrink: 0
+        flex-shrink:0
     }
 
     .burn-title {
@@ -582,7 +807,7 @@
         font-size: 11px;
         color: var(--text2);
         margin-top: 2px
-    }/* CATEGORY BADGE */
+    }/* ── CAT ──────────────────────────────────────────────── */
     .cat-badge {
         display: inline-flex;
         align-items: center;
@@ -606,194 +831,14 @@
     }
 
     .cat-bar-header b {
-        font-weight: 500
+        font-weight:500
     }
 
     .cat-bar-header span {
         color: var(--text2);
         font-size: 11px
-    }/* PIE CHART */
-    .chart-wrap {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        margin-bottom: 4px;
-        overflow: hidden
     }
 
-    .pie-svg {
-        flex-shrink: 0;
-        overflow: visible
-    }
-
-    .legend {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-        min-width: 0
-    }
-
-    .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 11px;
-        min-width: 0
-    }
-
-    .legend-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        flex-shrink: 0
-    }
-
-    .legend-name {
-        flex: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        min-width: 0
-    }
-
-    .legend-val {
-        font-weight: 600;
-        font-size: 11px;
-        flex-shrink: 0
-    }/* DAY GROUPS */
-    .day-group-header {
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: .06em;
-        text-transform: uppercase;
-        color: var(--text3);
-        padding: 10px 0 6px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center
-    }
-
-    .day-group-total {
-        font-family: 'Fraunces', serif;
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--amber)
-    }/* TRANSACTIONS */
-    .tx-wrap {
-        position: relative;
-        overflow: hidden;
-        border-radius: var(--r-sm);
-        margin-bottom: 2px
-    }
-
-    .tx-swipe-bg {
-        position: absolute;
-        right: 0;
-        top: 0;
-        bottom: 0;
-        width: 80px;
-        background: var(--red);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        border-radius: var(--r-sm)
-    }
-
-    .tx {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 0;
-        border-bottom: 1px solid var(--border);
-        background: var(--surface);
-        transition: transform .2s;
-        position: relative;
-        touch-action: pan-y
-    }
-
-    .tx:last-child {
-        border-bottom: none
-    }
-
-    .tx-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: var(--r-sm);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        flex-shrink: 0
-    }
-
-    .tx-body {
-        flex: 1;
-        min-width: 0
-    }
-
-    .tx-name {
-        font-size: 14px;
-        font-weight: 500;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap
-    }
-
-    .tx-meta {
-        font-size: 11px;
-        color: var(--text2);
-        margin-top: 2px;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        flex-wrap: wrap
-    }
-
-    .tx-right {
-        text-align: right;
-        flex-shrink: 0
-    }
-
-    .tx-amt {
-        font-family: 'Fraunces', serif;
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--amber)
-    }
-
-    .tx-actions {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        flex-shrink: 0
-    }
-
-    .tx-edit, .tx-del {
-        background: none;
-        border: none;
-        color: var(--text3);
-        font-size: 14px;
-        cursor: pointer;
-        padding: 2px
-    }
-
-    .tx-edit:active {
-        color: var(--green)
-    }
-
-    .tx-del:active {
-        color: var(--red)
-    }
-
-    .edited-tag {
-        font-size: 9px;
-        color: var(--text3);
-        background: var(--surface2);
-        padding: 1px 5px;
-        border-radius: 4px
-    }/* CAT COLORS */
     .c-restaurant {
         background: rgba(232, 108, 56, .15);
         color: #E86C38
@@ -852,7 +897,167 @@
     .c-misc {
         background: rgba(140, 140, 140, .15);
         color: #8C8C8C
-    }/* ROUTE */
+    }/* ── CHART ────────────────────────────────────────────── */
+    .chart-wrap {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 4px;
+        overflow: hidden
+    }
+
+    .pie-svg {
+        flex-shrink: 0;
+        overflow: visible
+    }
+
+    .legend {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        min-width: 0
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        min-width: 0
+    }
+
+    .legend-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0
+    }
+
+    .legend-name {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0
+    }
+
+    .legend-val {
+        font-weight: 600;
+        font-size: 11px;
+        flex-shrink: 0
+    }
+
+    .day-group-header {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: var(--text3);
+        padding: 10px 0 6px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center
+    }
+
+    .day-group-total {
+        font-family: 'Fraunces', serif;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--amber)
+    }/* ── TX ───────────────────────────────────────────────── */
+    .tx {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+        position: relative;
+        touch-action: pan-y
+    }
+
+    .tx:last-child {
+        border-bottom: none
+    }
+
+    .tx-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: var(--r-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0
+    }
+
+    .tx-body {
+        flex: 1;
+        min-width:0
+    }
+
+    .tx-name {
+        font-size: 14px;
+        font-weight: 500;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap
+    }
+
+    .tx-meta {
+        font-size: 11px;
+        color: var(--text2);
+        margin-top: 2px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        flex-wrap: wrap
+    }
+
+    .tx-right {
+        text-align: right;
+        flex-shrink: 0
+    }
+
+    .tx-amt {
+        font-family: 'Fraunces', serif;
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--amber)
+    }
+
+    .tx-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex-shrink: 0
+    }
+
+    .tx-edit, .tx-del {
+        background: none;
+        border: none;
+        color: var(--text3);
+        font-size: 14px;
+        cursor: pointer;
+        padding: 2px
+    }
+
+    .tx-edit:active {
+        color:var(--green)
+    }
+
+    .tx-del:active {
+        color: var(--red)
+    }
+
+    .edited-tag {
+        font-size: 9px;
+        color: var(--text3);
+        background: var(--surface2);
+        padding: 1px 5px;
+        border-radius: 4px
+    }/* ── ROUTE ────────────────────────────────────────────── */
     #route-map {
         height: 260px;
         border-radius: var(--r-sm);
@@ -953,12 +1158,13 @@
     }
 
     .gps-btn:active {
-        color: var(--green)
+        color:var(--green)
     }
 
     .gps-btn:disabled {
         opacity: .5
-    }/* AUTOCOMPLETE */
+    }
+
     .autocomplete-wrap {
         position: relative;
         flex: 1
@@ -989,13 +1195,10 @@
         border-bottom: none
     }
 
-    .autocomplete-item:hover, .autocomplete-item:active {
+    .autocomplete-item:active {
         background: var(--surface2)
     }
 
-    .autocomplete-item b {
-        color: var(--green)
-    }/* STOP LIST */
     .stop-item {
         display: flex;
         align-items: flex-start;
@@ -1062,7 +1265,7 @@
 
     .stop-body {
         flex: 1;
-        min-width: 0
+        min-width:0
     }
 
     .stop-name {
@@ -1080,7 +1283,58 @@
         display: flex;
         gap: 4px;
         flex-shrink: 0
-    }/* CURRENCY TABLE */
+    }/* ── WEATHER ──────────────────────────────────────────── */
+    .weather-strip {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: none
+    }
+
+    .weather-strip::-webkit-scrollbar {
+        display: none
+    }
+
+    .weather-slot {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        flex-shrink: 0;
+        background: var(--surface2);
+        border-radius: var(--r-sm);
+        padding: 10px 10px 8px;
+        min-width: 58px
+    }
+
+    .ws-time {
+        font-size: 10px;
+        color: var(--text3);
+        font-weight: 600;
+        letter-spacing: .04em
+    }
+
+    .ws-icon {
+        font-size: 22px;
+        line-height:1
+    }
+
+    .ws-temp {
+        font-family: 'Fraunces', serif;
+        font-size: 16px;
+        font-weight: 700
+    }
+
+    .ws-precip {
+        font-size: 10px;
+        font-weight:600
+    }
+
+    .ws-wind {
+        font-size: 9px;
+        color: var(--text3)
+    }/* ── FX TABLE ─────────────────────────────────────────── */
     .fx-table {
         width: 100%;
         border-collapse: collapse;
@@ -1124,7 +1378,7 @@
         color: var(--text3);
         margin-top: 6px;
         text-align: right
-    }/* MODAL */
+    }/* ── MODAL ────────────────────────────────────────────── */
     .modal-overlay {
         position: fixed;
         inset: 0;
@@ -1242,7 +1496,7 @@
         font-family: 'Instrument Sans', sans-serif;
         font-size: 14px;
         cursor: pointer
-    }/* SETTINGS */
+    }/* ── SETTINGS ─────────────────────────────────────────── */
     .save-btn {
         width: 100%;
         padding: 12px;
@@ -1276,6 +1530,19 @@
         background: none;
         color: var(--blue);
         border: 1px solid rgba(61, 168, 190, .3);
+        border-radius: var(--r-sm);
+        font-family: 'Instrument Sans', sans-serif;
+        font-size: 13px;
+        cursor: pointer;
+        margin-top: 7px
+    }
+
+    .archive-btn {
+        width: 100%;
+        padding: 11px;
+        background: none;
+        color: var(--amber);
+        border: 1px solid rgba(232, 168, 56, .3);
         border-radius: var(--r-sm);
         font-family: 'Instrument Sans', sans-serif;
         font-size: 13px;
@@ -1323,17 +1590,7 @@
         font-size: 12px;
         padding: 7px 12px;
         cursor: pointer
-    }
-
-    .form-lbl-full {
-        font-size: 11px;
-        letter-spacing: .07em;
-        text-transform: uppercase;
-        color: var(--text3);
-        margin-bottom: 4px;
-        display: block;
-        margin-top: 11px
-    }/* QUICK ADD */
+    }/* ── QA BAR ───────────────────────────────────────────── */
     .qa-bar {
         position: fixed;
         bottom: 0;
@@ -1397,7 +1654,7 @@
     }
 
     .qa-select.qa-cur {
-        max-width: 72px;
+        max-width: 82px;
         font-size: 12px
     }
 
@@ -1417,8 +1674,7 @@
         flex-shrink: 0;
         display: flex;
         align-items: center;
-        justify-content: center;
-        transition: transform .1s
+        justify-content: center
     }
 
     .qa-add-btn:active {
@@ -1438,7 +1694,7 @@
         align-items: center;
         justify-content: center;
         display: none
-    }/* MISC */
+    }/* ── MISC ─────────────────────────────────────────────── */
     .empty {
         text-align: center;
         padding: 36px 20px;
@@ -1510,58 +1766,6 @@
             transform: translateY(110vh) rotate(800deg);
             opacity: 0
         }
-    }/* WEATHER */
-
-    .weather-strip {
-        display: flex;
-        gap: 6px;
-        overflow-x: auto;
-        padding-bottom: 4px;
-        scrollbar-width: none
-    }
-
-    .weather-strip::-webkit-scrollbar {
-        display: none
-    }
-
-    .weather-slot {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 3px;
-        flex-shrink: 0;
-        background: var(--surface2);
-        border-radius: var(--r-sm);
-        padding: 10px 10px 8px;
-        min-width: 58px
-    }
-
-    .ws-time {
-        font-size: 10px;
-        color: var(--text3);
-        font-weight: 600;
-        letter-spacing: .04em
-    }
-
-    .ws-icon {
-        font-size: 22px;
-        line-height: 1
-    }
-
-    .ws-temp {
-        font-family: 'Fraunces', serif;
-        font-size: 16px;
-        font-weight: 700
-    }
-
-    .ws-precip {
-        font-size: 10px;
-        font-weight: 600
-    }
-
-    .ws-wind {
-        font-size: 9px;
-        color: var(--text3)
     }
     </style>
 
@@ -1581,7 +1785,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // ── Kategorien ────────────────────────────────────────────────────
+    // ── CONSTANTS ──────────────────────────────────────────────────────
     const CATS = [
     {
         id: 'restaurant',
@@ -1646,34 +1850,13 @@
     ];
     const CAT_COLORS = ['#E86C38', '#4CAF73', '#3DA8BE', '#A8843D', '#E05555', '#3D64BE', '#A83DBE', '#BE963D', '#BE783D', '#3DBE96', '#BE3D78', '#8C8C8C'];
 
-    // ── FX ────────────────────────────────────────────────────────────
-    let FX = {
-        EUR: 1,
-        DKK: 7.46,
-        NOK: 11.8,
-        SEK: 11.3
-    };
-    let fxUpdatedAt = null;
-
-    // Currency detected from GPS country code
-    const COUNTRY_CURRENCY = {
-        DK: {
-            code: 'DKK',
-            flag: '🇩🇰',
-            name: 'Dänische Krone'
-        },
-        NO: {
-            code: 'NOK',
-            flag: '🇳🇴',
-            name: 'Norwegische Krone'
-        },
-        SE: {
-            code: 'SEK',
-            flag: '🇸🇪',
-            name: 'Schwedische Krone'
-        },
-    };
+    // All available currencies
     const ALL_CURRENCIES = [
+    {
+        code: 'EUR',
+        flag: '🇪🇺',
+        name: 'Euro'
+    },
     {
         code: 'DKK',
         flag: '🇩🇰',
@@ -1689,12 +1872,83 @@
         flag: '🇸🇪',
         name: 'Schwedische Krone'
     },
+    {
+        code: 'GBP',
+        flag: '🇬🇧',
+        name: 'Britisches Pfund'
+    },
+    {
+        code: 'CHF',
+        flag: '🇨🇭',
+        name: 'Schweizer Franken'
+    },
+    {
+        code: 'USD',
+        flag: '🇺🇸',
+        name: 'US-Dollar'
+    },
+    {
+        code: 'PLN',
+        flag: '🇵🇱',
+        name: 'Polnischer Zloty'
+    },
+    {
+        code: 'CZK',
+        flag: '🇨🇿',
+        name: 'Tschechische Krone'
+    },
+    {
+        code: 'HUF',
+        flag: '🇭🇺',
+        name: 'Ungarischer Forint'
+    },
+    {
+        code: 'HRK',
+        flag: '🇭🇷',
+        name: 'Kroatische Kuna'
+    },
+    {
+        code: 'ISK',
+        flag: '🇮🇸',
+        name: 'Isländische Krone'
+    },
     ];
-    let sessionCurrency = null; // set by GPS detection
+    const COUNTRY_CURRENCY = {
+        DK: 'DKK',
+        NO: 'NOK',
+        SE: 'SEK',
+        GB: 'GBP',
+        CH: 'CHF',
+        US: 'USD',
+        PL: 'PLN',
+        CZ: 'CZK',
+        HU: 'HUF',
+        HR: 'HRK',
+        IS: 'ISK',
+    };
+
+    // ── FX ─────────────────────────────────────────────────────────────
+    let FX = {
+        EUR: 1,
+        DKK: 7.46,
+        NOK: 11.8,
+        SEK: 11.3,
+        GBP: 0.86,
+        CHF: 0.96,
+        USD: 1.08,
+        PLN: 4.25,
+        CZK: 25.1,
+        HUF: 390,
+        HRK: 7.53,
+        ISK: 150
+    };
+    let fxUpdatedAt = null;
+    let sessionCurrency = null; // detected from GPS
 
     async function loadFX() {
         try {
-            const r = await fetch('https://api.frankfurter.app/latest?from=EUR&to=DKK,NOK,SEK');
+            const codes = ALL_CURRENCIES.filter(c => c.code !== 'EUR').map(c => c.code).join(',');
+            const r = await fetch(`https://api.frankfurter.app/latest?from=EUR&to=${codes}`);
             const d = await r.json();
             FX = {
                 EUR: 1,
@@ -1704,244 +1958,38 @@
         } catch (e) {}
         updateFXDisplay();
     }
+    function getCurInfo(code) {
+        return ALL_CURRENCIES.find(c => c.code === code) || {
+                code,
+                flag: '💱',
+                name: code
+            };
+    }
+    function toEUR(a, cur) {
+        return a / (FX[cur] || 1);
+    }
 
     function updateFXDisplay() {
         const el = document.getElementById('fx-bar');
         if (el) {
             if (sessionCurrency) {
-                const rate = FX[sessionCurrency.code];
-                const inv = (100 / rate).toFixed(2);
-                el.innerHTML =
-                `${sessionCurrency.flag} <span style="opacity:.5;font-size:10px;margin-right:2px">EUR→${sessionCurrency.code}</span>`
-                + `<b style="color:var(--text);font-weight:600">1€ = ${rate.toFixed(2)} ${sessionCurrency.code}</b>`
+                const rate = FX[sessionCurrency];
+                const inv = rate ? (100 / rate).toFixed(2) : '–';
+                const ci = getCurInfo(sessionCurrency);
+                el.innerHTML = `${ci.flag} <span style="opacity:.5;font-size:10px;margin-right:2px">EUR→${ci.code}</span>`
+                + `<b style="color:var(--text);font-weight:600">1€ = ${rate?.toFixed(2)} ${ci.code}</b>`
                 + `<span style="margin:0 8px;opacity:.25">│</span>`
-                + `<span style="opacity:.5;font-size:10px;margin-right:2px">${sessionCurrency.code}→EUR</span>`
-                + `<b style="color:var(--text);font-weight:600">100 ${sessionCurrency.code} = ${inv} €</b>`;
+                + `<span style="opacity:.5;font-size:10px;margin-right:2px">${ci.code}→EUR</span>`
+                + `<b style="color:var(--text);font-weight:600">100 ${ci.code} = ${inv} €</b>`;
             } else {
-                el.textContent = `1€ = ${FX.DKK.toFixed(2)} DKK · ${FX.NOK.toFixed(2)} NOK · ${FX.SEK.toFixed(2)} SEK`;
+                const tripCurs = (window._tripData?.currencies || ['DKK', 'NOK', 'SEK']).filter(c => c !== 'EUR');
+                el.textContent = tripCurs.map(c => `1€ = ${FX[c]?.toFixed(2) || '–'} ${c}`).join(' · ');
             }
         }
-        renderFXTable();
+        window.renderFXTable && window.renderFXTable();
     }
 
-    window.renderFXTable = function() {
-        const tbody = document.getElementById('fx-tbody');
-        if (!tbody)
-            return;
-        // Always show all 3 currencies in Today tab
-        const toShow = ALL_CURRENCIES;
-        tbody.innerHTML = toShow.map(c => `
-    <tr>
-      <td class="flag">${
-        c.flag}</td>
-      <td><b>${c.code}</b><div style="font-size:10px;color:var(--text2)">${c.name}</div></td>
-      <td class="rate">${FX[c.code].toFixed(2)}</td>
-      <td class="rate">${(100 / FX[c.code]).toFixed(2)}</td>
-    </tr>`
-        ).join('');
-        // Update thead to clarify 100kr
-        const thead = document.getElementById('fx-thead');
-        if (thead) {
-            const cur = sessionCurrency ? sessionCurrency.code : 'kr';
-            thead.innerHTML = `<tr><th></th><th>Währung</th><th style="text-align:right">1 € =</th><th style="text-align:right">100 ${cur} =</th></tr>`;
-        }
-        const upd = document.getElementById('fx-updated-time');
-        if (upd && fxUpdatedAt)
-            upd.textContent = 'Kurse vom ' + fxUpdatedAt.toLocaleTimeString('de', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-    }
-    // Detect country from GPS and set sessionCurrency + load weather
-    async function detectSessionCurrency() {
-        if (!navigator.geolocation)
-            return;
-        navigator.geolocation.getCurrentPosition(async pos => {
-            try {
-                const {latitude: lat, longitude: lng} = pos.coords;
-                const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=de`);
-                const d = await r.json();
-                const cc = (d.address?.country_code || '').toUpperCase();
-                if (COUNTRY_CURRENCY[cc]) {
-                    sessionCurrency = COUNTRY_CURRENCY[cc];
-                    updateFXDisplay();
-                    const fromSel = document.getElementById('conv-from');
-                    if (fromSel)
-                        fromSel.value = sessionCurrency.code;
-                }
-                // Weather
-                const place = d.address?.city || d.address?.town || d.address?.village || d.address?.county || '';
-                await loadWeather(lat, lng, place);
-            } catch (e) {}
-        }, () => {}, {
-            timeout: 8000,
-            enableHighAccuracy: false
-        });
-    }
-
-    // Weather codes → icon + label
-    function wmoIcon(code) {
-        if (code === 0)
-            return {
-                icon: '☀️',
-                label: 'Klar'
-            };
-        if (code <= 2)
-            return {
-                icon: '🌤️',
-                label: 'Leicht bewölkt'
-            };
-        if (code <= 3)
-            return {
-                icon: '☁️',
-                label: 'Bewölkt'
-            };
-        if (code <= 49)
-            return {
-                icon: '🌫️',
-                label: 'Nebel'
-            };
-        if (code <= 59)
-            return {
-                icon: '🌦️',
-                label: 'Nieselregen'
-            };
-        if (code <= 69)
-            return {
-                icon: '🌧️',
-                label: 'Regen'
-            };
-        if (code <= 79)
-            return {
-                icon: '❄️',
-                label: 'Schnee'
-            };
-        if (code <= 84)
-            return {
-                icon: '🌦️',
-                label: 'Schauer'
-            };
-        if (code <= 94)
-            return {
-                icon: '⛈️',
-                label: 'Gewitter'
-            };
-        return {
-            icon: '⛈️',
-            label: 'Unwetter'
-        };
-    }
-
-    async function loadWeather(lat, lng, placeName) {
-        const el = document.getElementById('weather-strip');
-        const loc = document.getElementById('weather-location');
-        const updated = document.getElementById('weather-updated');
-        if (!el)
-            return;
-        el.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:8px">Wetter wird geladen…</div>';
-        if (loc)
-            loc.textContent = placeName || 'Aktueller Standort';
-        try {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}`
-            + `&hourly=temperature_2m,precipitation_probability,weathercode,windspeed_10m`
-            + `&timezone=auto&forecast_days=2`;
-            const r = await fetch(url);
-            const d = await r.json();
-            const now = new Date();
-            const hours = d.hourly.time.map((t, i) => ({
-                time: new Date(t),
-                temp: d.hourly.temperature_2m[i],
-                precip: d.hourly.precipitation_probability[i],
-                code: d.hourly.weathercode[i],
-                wind: d.hourly.windspeed_10m[i],
-            }));
-            // Filter: current hour + next 23 hours
-            const nowH = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours());
-            const relevant = hours.filter(h => h.time >= nowH).slice(0, 24);
-            // Show every 3 hours = 8 slots
-            const slots = relevant.filter((_, i) => i % 3 === 0);
-            el.innerHTML = slots.map((h, i) => {
-                const w = wmoIcon(h.code);
-                const label = i === 0 ? 'Jetzt' : h.time.toLocaleTimeString('de', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-                const precipColor = h.precip > 60 ? 'var(--blue)' : h.precip > 30 ? 'var(--amber)' : 'var(--text3)';
-                return `<div class="weather-slot">
-        <div class="ws-time">${label}</div>
-        <div class="ws-icon">${w.icon}</div>
-        <div class="ws-temp">${Math.round(h.temp)}°</div>
-        <div class="ws-precip" style="color:${precipColor}">${h.precip}%</div>
-        <div class="ws-wind">${Math.round(h.wind)} km/h</div>
-      </div>`
-                ;
-            }).join('');
-            if (updated)
-                updated.textContent = 'Stand: ' + now.toLocaleTimeString('de', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-        } catch (e) {
-            el.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:8px">Wetter nicht verfügbar</div>';
-        }
-    }
-
-    window.refreshWeather = function() {
-        const btn = document.getElementById('weather-refresh-btn');
-        if (btn) {
-            btn.style.transform = 'rotate(360deg)';
-            setTimeout(() => btn.style.transform = '', 500);
-        }
-        detectSessionCurrency();
-    };
-
-    // ── Währungsrechner ───────────────────────────────────────────────
-    window.convertCurrency = function() {
-        const amt = parseFloat(document.getElementById('conv-amount').value);
-        const from = document.getElementById('conv-from').value;
-        const to = document.getElementById('conv-to').value;
-        const resultEl = document.getElementById('conv-result');
-        const hintEl = document.getElementById('conv-rate-hint');
-        if (!amt || isNaN(amt) || amt <= 0) {
-            resultEl.textContent = '–';
-            hintEl.textContent = '';
-            return;
-        }
-        // Convert: everything via EUR as base
-        const inEUR = (from === 'EUR') ? amt : (amt / FX[from]);
-        const result = (to === 'EUR') ? inEUR : (inEUR * FX[to]);
-        const sym = {
-            EUR: '€ EUR',
-            DKK: 'DKK',
-            NOK: 'NOK',
-            SEK: 'SEK'
-        };
-        resultEl.textContent = result.toFixed(2) + ' ' + sym[to];
-        // Rate hint: 1 unit of from = ? to
-        const oneInEUR = (from === 'EUR') ? 1 : (1 / FX[from]);
-        const rate = (to === 'EUR') ? oneInEUR : (oneInEUR * FX[to]);
-        hintEl.textContent = '1 ' + from + ' = ' + rate.toFixed(4) + ' ' + to;
-    };
-
-    window.swapCurrencies = function() {
-        const fromSel = document.getElementById('conv-from');
-        const toSel = document.getElementById('conv-to');
-        const tmp = fromSel.value;
-        fromSel.value = toSel.value;
-        toSel.value = tmp;
-        const btn = document.getElementById('swap-btn');
-        if (btn) {
-            btn.style.transform = 'rotate(180deg)';
-            setTimeout(() => btn.style.transform = '', 300);
-        }
-        convertCurrency();
-    };
-
-    function toEUR(a, cur) {
-        return a / (FX[cur] || 1);
-    }
-
-    // ── Karte ─────────────────────────────────────────────────────────
+    // ── MAP ─────────────────────────────────────────────────────────────
     let map = null,
         tileLayer = null,
         routeLayer = null,
@@ -1991,8 +2039,8 @@
                 iconSize: [isLast ? 16 : 11, isLast ? 16 : 11],
                 iconAnchor: [isLast ? 8 : 5.5, isLast ? 8 : 5.5]
             });
-            const mode = i === 0 ? '' : s.ferry ? ' · ⛴️ Fähre' : ' · 🚗 Straße';
-            const km = i === 0 ? '' : (s.km ? ' · ' + s.km + ' km' : '');
+            const mode = i === 0 ? '' : s.ferry ? ' · ⛴️' : ' · 🚗';
+            const km = s.km ? ' · ' + s.km + ' km' : '';
             L.marker([s.lat, s.lng], {
                 icon
             })
@@ -2008,7 +2056,7 @@
         setTimeout(() => map.invalidateSize(), 200);
     }
 
-    // ── Routing ───────────────────────────────────────────────────────
+    // ── ROUTING ─────────────────────────────────────────────────────────
     function haversine(a, b) {
         const R = 6371,
             dLat = (b.lat - a.lat) * Math.PI / 180,
@@ -2031,7 +2079,7 @@
         return stops.reduce((a, s) => a + (s.km || 0), 0);
     }
 
-    // ── Geocoding + Autocomplete ──────────────────────────────────────
+    // ── GEOCODING ───────────────────────────────────────────────────────
     async function geocode(query) {
         const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`, {
             headers: {
@@ -2054,12 +2102,11 @@
         });
         return await r.json();
     }
-
     let acTimer = null,
         acSelected = null;
-    function setupAutocomplete(inputId, listId) {
-        const inp = document.getElementById(inputId);
-        const list = document.getElementById(listId);
+    function setupAutocomplete() {
+        const inp = document.getElementById('stop-name');
+        const list = document.getElementById('ac-list');
         if (!inp || !list)
             return;
         inp.addEventListener('input', () => {
@@ -2081,7 +2128,7 @@
                         const city = r.address?.city || r.address?.town || r.address?.village || r.name || '';
                         const country = r.address?.country || '';
                         const display = city + (country ? ' · ' + country : '');
-                        return `<div class="autocomplete-item" data-lat="${r.lat}" data-lng="${r.lon}" data-name="${display}" onclick="selectPlace(${i},'${inputId}','${listId}')">${display}</div>`;
+                        return `<div class="autocomplete-item" onclick="selectPlace(${i})">${display}</div>`;
                     }).join('');
                     list._results = results;
                     list.style.display = 'block';
@@ -2094,9 +2141,9 @@
             list.style.display = 'none';
         }, 200));
     }
-    window.selectPlace = function(idx, inputId, listId) {
-        const list = document.getElementById(listId);
-        const inp = document.getElementById(inputId);
+    window.selectPlace = function(idx) {
+        const list = document.getElementById('ac-list');
+        const inp = document.getElementById('stop-name');
         const r = list._results?.[idx];
         if (!r)
             return;
@@ -2112,11 +2159,12 @@
         };
     };
 
-    // ── State ─────────────────────────────────────────────────────────
+    // ── STATE ───────────────────────────────────────────────────────────
     let tripCode = null,
         myName = null,
         unsubscribe = null,
-        editingExpId = null;
+        isArchived = false;
+
     const fmt = d => d.toISOString().split('T')[0];
     const today = () => fmt(new Date());
     const getCat = id => CATS.find(c => c.id === id) || CATS[CATS.length - 1];
@@ -2135,34 +2183,38 @@
         return total / Math.max(1, days);
     };
 
-    // ── Haptic ────────────────────────────────────────────────────────
-    function haptic(type='light') {
+    // ── TRIP ARCHIVE (localStorage) ─────────────────────────────────────
+    function getArchive() {
+        return JSON.parse(localStorage.getItem('budgio_archive') || '[]');
+    }
+    function saveArchive(arr) {
+        localStorage.setItem('budgio_archive', JSON.stringify(arr));
+    }
+    function upsertArchive(code, name, status='active') {
+        const arr = getArchive().filter(t => t.code !== code);
+        arr.unshift({
+            code,
+            name,
+            status,
+            lastOpened: Date.now()
+        });
+        saveArchive(arr);
+    }
+    function setArchiveStatus(code, status) {
+        const arr = getArchive();
+        const t = arr.find(t => t.code === code);
+        if (t) {
+            t.status = status;
+            saveArchive(arr);
+        }
+    }
+
+    // ── HELPERS ─────────────────────────────────────────────────────────
+    function haptic(t='light') {
         try {
-            navigator.vibrate && navigator.vibrate(type === 'light' ? 10 : type === 'medium' ? 20 : 50);
+            navigator.vibrate && navigator.vibrate(t === 'light' ? 10 : 20);
         } catch (e) {}
     }
-
-    // ── Animated counter ──────────────────────────────────────────────
-    function animateNum(el, target, prefix='€', decimals=0) {
-        const start = parseFloat(el.dataset.val || '0');
-        el.dataset.val = target;
-        const dur = 400,
-            steps = 20,
-            step = (target - start) / steps;
-        let cur = start,
-            count = 0;
-        const t = setInterval(() => {
-            cur += step;
-            count++;
-            if (count >= steps) {
-                cur = target;
-                clearInterval(t);
-            }
-            el.textContent = prefix + Math.round(cur).toLocaleString('de');
-        }, dur / steps);
-    }
-
-    // ── Toast ─────────────────────────────────────────────────────────
     function showToast(msg, dur=2400) {
         const el = document.getElementById('toast');
         el.textContent = msg;
@@ -2170,12 +2222,9 @@
         clearTimeout(el._t);
         el._t = setTimeout(() => el.classList.remove('show'), dur);
     }
-
-    // ── Confetti ──────────────────────────────────────────────────────
     function confetti(extra=false) {
         const colors = ['#4CAF73', '#E8A838', '#3DA8BE', '#E05555', '#A8D86B'];
-        const count = extra ? 40 : 20;
-        for (let i = 0; i < count; i++) {
+        for (let i = 0; i < (extra ? 40 : 20); i++) {
             const el = document.createElement('div');
             el.className = 'confetti-bit';
             el.style.cssText = `left:${Math.random() * 100}vw;top:-8px;background:${colors[i % colors.length]};animation-delay:${Math.random() * .7}s;animation-duration:${1.8 + Math.random() * 1.2}s;transform:rotate(${Math.random() * 360}deg);border-radius:${Math.random() > .5 ? '50%' : '2px'}`;
@@ -2183,22 +2232,32 @@
             el.addEventListener('animationend', () => el.remove());
         }
     }
-
-    // ── km Milestones ─────────────────────────────────────────────────
     let lastKmMilestone = 0;
     function checkKmMilestone(km) {
-        const milestones = [500, 1000, 1500, 2000, 2500, 3000, 4000, 5000];
-        for (const m of milestones) {
+        for (const m of [500, 1000, 1500, 2000, 2500, 3000, 4000, 5000]) {
             if (km >= m && lastKmMilestone < m) {
                 lastKmMilestone = m;
                 confetti(true);
-                showToast('🎊 ' + m + ' km Meilenstein erreicht!', 3500);
-                haptic('strong');
+                showToast('🎊 ' + m + ' km Meilenstein!', 3500);
+                haptic('medium');
             }
         }
     }
+    function getSortedStops(stops) {
+        return [...stops].sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+    }
+    function downloadBlob(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
 
-    // ── Theme ─────────────────────────────────────────────────────────
+    // ── THEME ───────────────────────────────────────────────────────────
     window.toggleTheme = function() {
         const html = document.documentElement;
         const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
@@ -2207,65 +2266,165 @@
         document.getElementById('theme-btn').textContent = next === 'dark' ? '☀️' : '🌙';
         updateMapTiles();
     };
-
-    // ── Reload ────────────────────────────────────────────────────────
     window.reloadApp = function() {
-        const btn = document.getElementById('reload-btn');
-        btn.classList.add('spinning');
+        document.getElementById('reload-btn').classList.add('spinning');
         setTimeout(() => location.reload(), 300);
     };
 
-    // ── Boot ──────────────────────────────────────────────────────────
+    // ── BOOT ────────────────────────────────────────────────────────────
     window.addEventListener('DOMContentLoaded', () => {
         const savedTheme = localStorage.getItem('budgio_theme') || 'dark';
         document.documentElement.setAttribute('data-theme', savedTheme);
         document.getElementById('theme-btn').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-
         loadFX();
-        detectSessionCurrency();
+        renderHomeCurrencyPicker();
 
-        const saved = localStorage.getItem('budgio_session');
-        if (saved) {
-            const s = JSON.parse(saved);
-            tripCode = s.code;
-            myName = s.name;
+        const last = localStorage.getItem('budgio_last');
+        if (last) {
+            const {code, name} = JSON.parse(last);
+            tripCode = code;
+            myName = name;
             showApp();
             subscribeTrip();
         } else {
-            // Pre-fill last code
-            const lastCode = localStorage.getItem('budgio_last_code');
-            if (lastCode)
-                document.getElementById('j-code').value = lastCode;
-            showScreen('screen-home');
+            showHome();
         }
-        const t = new Date(),
-            e = new Date();
-        e.setDate(e.getDate() + 7);
-        document.getElementById('s-start').value = fmt(t);
-        document.getElementById('s-end').value = fmt(e);
-        renderSetupPersons();
+        setupAutocomplete();
         document.getElementById('qa-cat').innerHTML = CATS.map(c => `<option value="${c.id}">${c.emoji} ${c.name}</option>`).join('');
         document.getElementById('edit-cat').innerHTML = CATS.map(c => `<option value="${c.id}">${c.emoji} ${c.name}</option>`).join('');
-        setupAutocomplete('stop-name', 'ac-list');
-
-        // Online/offline
         window.addEventListener('offline', () => document.getElementById('offline-banner').classList.add('show'));
         window.addEventListener('online', () => document.getElementById('offline-banner').classList.remove('show'));
         if (!navigator.onLine)
             document.getElementById('offline-banner').classList.add('show');
     });
 
-    function showScreen(id) {
+    // ── HOME SCREEN ─────────────────────────────────────────────────────
+    function showHome() {
         document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
-        document.getElementById(id).style.display = 'flex';
+        document.getElementById('app').style.display = 'none';
+        const home = document.getElementById('home-screen');
+        home.style.display = 'flex';
+        renderHome();
     }
-    function showApp() {
-        document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
-        document.getElementById('app').style.display = 'block';
-        document.getElementById('qa-bar').style.display = 'block';
+    function renderHome() {
+        const archive = getArchive();
+        const body = document.getElementById('home-body');
+        let html = '';
+        if (archive.length) {
+            html += '<div class="home-section-label">Meine Reisen</div>';
+            html += archive.map(t => `
+      <div class="trip-card" onclick="openTrip('${t.code}')">
+        <div class="trip-card-icon">${t.status === 'archived' ? '📦' : '🌿'}</div>
+        <div class="trip-card-body">
+          <div class="trip-card-name">${
+            t.name || t.code}</div>
+          <div class="trip-card-meta">Code: ${t.code} · Zuletzt: ${new Date(t.lastOpened).toLocaleDateString('de', {day: 'numeric',month: 'short',year: 'numeric'})}</div>
+        </div>
+        <div class="trip-card-badge ${
+            t.status === 'archived' ? 'badge-archived' : 'badge-active'}">${t.status === 'archived' ? 'Archiviert' : 'Aktiv'}</div>
+      </div>`
+            ).join('');
+        }
+        html += '<div class="home-section-label" style="margin-top:' + (archive.length ? '8px' : '0') + '">Neue Reise</div>';
+        html += '<button class="home-action-btn" onclick="showScreen(\'screen-create\')">✈️ Neue Reise erstellen</button>';
+        html += '<button class="home-secondary-btn" onclick="showScreen(\'screen-join\')">🔑 Per Code beitreten</button>';
+        body.innerHTML = html;
     }
 
-    // ── Setup ─────────────────────────────────────────────────────────
+    window.openTrip = async function(code) {
+        showToast('Lade Reise…');
+        try {
+            const snap = await getDoc(doc(db, 'trips', code));
+            if (!snap.exists()) {
+                showToast('Reise nicht gefunden');
+                return;
+            }
+            const data = snap.data();
+            tripCode = code;
+            myName = localStorage.getItem('budgio_myname_' + code) || 'Gast';
+            isArchived = data.status === 'archived';
+            upsertArchive(code, data.name, data.status || 'active');
+            localStorage.setItem('budgio_last', JSON.stringify({
+                code,
+                name: myName
+            }));
+            showApp();
+            subscribeTrip();
+        } catch (err) {
+            showToast('Fehler: ' + err.message);
+        }
+    };
+
+    // ── SCREEN NAV ──────────────────────────────────────────────────────
+    window.showScreen = function(id) {
+        document.getElementById('home-screen').style.display = 'none';
+        document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+        document.getElementById(id).style.display = 'flex';
+    };
+    window.backToHome = function() {
+        showHome();
+    };
+
+    // ── TRIP SWITCHER SHEET ─────────────────────────────────────────────
+    window.openTripSwitcher = function() {
+        const archive = getArchive();
+        const content = document.getElementById('switcher-content');
+        content.innerHTML = archive.map(t => `
+    <div class="trip-card" onclick="switchToTrip('${t.code}')" style="margin-bottom:8px">
+      <div class="trip-card-icon">${t.status === 'archived' ? '📦' : '🌿'}</div>
+      <div class="trip-card-body">
+        <div class="trip-card-name">${
+        t.name || t.code}</div>
+        <div class="trip-card-meta">Code: ${t.code}</div>
+      </div>
+      <div class="trip-card-badge ${
+        t.status === 'archived' ? 'badge-archived' : 'badge-active'}">${t.status === 'archived' ? 'Archiv' : 'Aktiv'}</div>
+    </div>`
+        ).join('')
+        + '<div style="margin-top:12px"><button class="home-secondary-btn" onclick="closeTripSwitcher();setTimeout(()=>showHome(),200)">+ Neue Reise / Code eingeben</button></div>';
+        document.getElementById('trip-switcher').style.display = 'flex';
+    };
+    window.closeTripSwitcher = function() {
+        document.getElementById('trip-switcher').style.display = 'none';
+    };
+    window.switchToTrip = async function(code) {
+        closeTripSwitcher();
+        if (code === tripCode)
+            return;
+        if (unsubscribe)
+            unsubscribe();
+        await openTrip(code);
+    };
+
+    // ── CURRENCY PICKER (setup) ─────────────────────────────────────────
+    let selectedCurrencies = ['EUR', 'DKK', 'NOK', 'SEK'];
+    function renderHomeCurrencyPicker() {
+        const wrap = document.getElementById('currency-picker-wrap');
+        if (!wrap)
+            return;
+        wrap.innerHTML = ALL_CURRENCIES.map(c => {
+            const sel = selectedCurrencies.includes(c.code);
+            const isEUR = c.code === 'EUR';
+            return `<div class="cur-chip${sel ? ' selected' : ''}${isEUR ? ' disabled' : ''}" onclick="${isEUR ? '' : 'toggleCurrency(\'' + c.code + '\')'}" data-code="${c.code}">${c.flag} ${c.code}</div>`;
+        }).join('');
+        document.getElementById('cur-hint').textContent = `${selectedCurrencies.length}/5 gewählt (EUR immer enthalten)`;
+    }
+    window.toggleCurrency = function(code) {
+        if (code === 'EUR')
+            return;
+        if (selectedCurrencies.includes(code)) {
+            selectedCurrencies = selectedCurrencies.filter(c => c !== code);
+        } else {
+            if (selectedCurrencies.length >= 5) {
+                showToast('Maximal 5 Währungen');
+                return;
+            }
+            selectedCurrencies.push(code);
+        }
+        renderHomeCurrencyPicker();
+    };
+
+    // ── CREATE TRIP ─────────────────────────────────────────────────────
     let setupPersons = [{
         id: 'p1',
         name: 'Ich',
@@ -2292,7 +2451,6 @@
         document.getElementById('s-pemoji').value = '';
         renderSetupPersons();
     };
-
     window.createTrip = async function() {
         const name = document.getElementById('s-name').value.trim();
         const total = parseFloat(document.getElementById('s-total').value);
@@ -2307,7 +2465,13 @@
             showToast('Enddatum muss nach Startdatum liegen');
             return;
         }
+        const t = new Date(),
+            e2 = new Date();
+        e2.setDate(e2.getDate() + 7);
+        document.getElementById('s-start').value = fmt(t);
+        document.getElementById('s-end').value = fmt(e2);
         const code = name.replace(/\s+/g, '').toUpperCase().slice(0, 6) + Math.floor(100 + Math.random() * 900);
+        const currencies = selectedCurrencies.includes('EUR') ? selectedCurrencies : ['EUR', ...selectedCurrencies];
         try {
             document.getElementById('btn-create').disabled = true;
             await setDoc(doc(db, 'trips', code), {
@@ -2318,16 +2482,20 @@
                 persons: [...setupPersons],
                 expenses: [],
                 stops: [],
+                currencies,
                 code,
+                status: 'active',
                 createdAt: Date.now()
             });
             tripCode = code;
             myName = creator;
-            localStorage.setItem('budgio_session', JSON.stringify({
+            isArchived = false;
+            localStorage.setItem('budgio_myname_' + code, creator);
+            localStorage.setItem('budgio_last', JSON.stringify({
                 code,
                 name: creator
             }));
-            localStorage.setItem('budgio_last_code', code);
+            upsertArchive(code, name, 'active');
             showApp();
             subscribeTrip();
             showToast('Reise erstellt! Code: ' + code);
@@ -2339,6 +2507,7 @@
         }
     };
 
+    // ── JOIN TRIP ───────────────────────────────────────────────────────
     window.joinTrip = async function() {
         const code = document.getElementById('j-code').value.trim().toUpperCase();
         const name = document.getElementById('j-name').value.trim();
@@ -2353,13 +2522,16 @@
                 showToast('Reise nicht gefunden');
                 return;
             }
+            const data = snap.data();
             tripCode = code;
             myName = name;
-            localStorage.setItem('budgio_session', JSON.stringify({
+            isArchived = data.status === 'archived';
+            localStorage.setItem('budgio_myname_' + code, name);
+            localStorage.setItem('budgio_last', JSON.stringify({
                 code,
                 name
             }));
-            localStorage.setItem('budgio_last_code', code);
+            upsertArchive(code, data.name || code, data.status || 'active');
             showApp();
             subscribeTrip();
             showToast('Willkommen, ' + name + '!');
@@ -2371,7 +2543,7 @@
         }
     };
 
-    // ── Firebase ──────────────────────────────────────────────────────
+    // ── FIREBASE ────────────────────────────────────────────────────────
     function subscribeTrip() {
         if (unsubscribe)
             unsubscribe();
@@ -2381,9 +2553,18 @@
                 return;
             const data = snap.data();
             data.daily = calcDayBudget(data.total, data.start, data.end);
+            isArchived = data.status === 'archived';
             window._tripData = data;
             window._tripCode = tripCode;
             setConn('online');
+            // Update archive
+            upsertArchive(tripCode, data.name, data.status || 'active');
+            // Archived banner
+            const ab = document.getElementById('archived-banner');
+            if (ab)
+                ab.classList.toggle('show', isArchived);
+            // Hide/show QA bar
+            document.getElementById('qa-bar').style.display = isArchived ? 'none' : 'block';
             render(data);
         }, () => setConn('offline'));
     }
@@ -2396,9 +2577,204 @@
                 offline: '🔴'
             }[s];
     }
+    function showApp() {
+        document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+        document.getElementById('home-screen').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        if (!isArchived)
+            document.getElementById('qa-bar').style.display = 'block';
+        detectSessionCurrency();
+    }
 
-    // ── Ausgaben ──────────────────────────────────────────────────────
+    // ── GPS + WEATHER ───────────────────────────────────────────────────
+    async function detectSessionCurrency() {
+        if (!navigator.geolocation)
+            return;
+        navigator.geolocation.getCurrentPosition(async pos => {
+            try {
+                const {latitude: lat, longitude: lng} = pos.coords;
+                const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=de`);
+                const d = await r.json();
+                const cc = (d.address?.country_code || '').toUpperCase();
+                const detectedCode = COUNTRY_CURRENCY[cc];
+                if (detectedCode) {
+                    sessionCurrency = detectedCode;
+                    updateFXDisplay();
+                }
+                const place = d.address?.city || d.address?.town || d.address?.village || d.address?.county || '';
+                await loadWeather(lat, lng, place);
+                // Pre-select in converter
+                if (detectedCode) {
+                    const fromSel = document.getElementById('conv-from');
+                    if (fromSel) {
+                        // check if trip has this currency
+                        const tripCurs = window._tripData?.currencies || [];
+                        if (tripCurs.includes(detectedCode))
+                            fromSel.value = detectedCode;
+                    }
+                }
+            } catch (e) {}
+        }, () => {}, {
+            timeout: 8000,
+            enableHighAccuracy: false
+        });
+    }
+    window.locateMe = function() {
+        const btn = document.getElementById('gps-btn');
+        if (!navigator.geolocation) {
+            showToast('GPS nicht verfügbar');
+            return;
+        }
+        btn.disabled = true;
+        btn.textContent = 'GPS...';
+        navigator.geolocation.getCurrentPosition(async pos => {
+            try {
+                const {latitude: lat, longitude: lng} = pos.coords;
+                const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=de`);
+                const d = await r.json();
+                const cc = (d.address?.country_code || '').toUpperCase();
+                const detectedCode = COUNTRY_CURRENCY[cc];
+                if (detectedCode && !sessionCurrency) {
+                    sessionCurrency = detectedCode;
+                    updateFXDisplay();
+                    const fromSel = document.getElementById('conv-from');
+                    if (fromSel) {
+                        const tripCurs = window._tripData?.currencies || [];
+                        if (tripCurs.includes(detectedCode))
+                            fromSel.value = detectedCode;
+                    }
+                }
+                const place = d.address?.city || d.address?.town || d.address?.village || d.address?.county || 'Aktueller Standort';
+                const country = d.address?.country || '';
+                const inp = document.getElementById('stop-name');
+                inp.value = place + (country ? ', ' + country : '');
+                inp.dataset.lat = lat;
+                inp.dataset.lng = lng;
+                acSelected = {
+                    lat,
+                    lng
+                };
+                await loadWeather(lat, lng, place);
+                showToast('Standort: ' + place);
+            } catch (e) {
+                showToast('Standort nicht bestimmbar');
+            }
+            finally {
+                btn.disabled = false;
+                btn.textContent = '📍 GPS';
+            }
+        }, () => {
+            showToast('GPS-Zugriff verweigert');
+            btn.disabled = false;
+            btn.textContent = '📍 GPS';
+        }, {
+            timeout: 10000,
+            enableHighAccuracy: true
+        });
+    };
+
+    function wmoIcon(code) {
+        if (code === 0)
+            return {
+                icon: '☀️',
+                label: 'Klar'
+            };
+        if (code <= 2)
+            return {
+                icon: '🌤️',
+                label: 'Bewölkt'
+            };
+        if (code <= 3)
+            return {
+                icon: '☁️',
+                label: 'Bedeckt'
+            };
+        if (code <= 49)
+            return {
+                icon: '🌫️',
+                label: 'Nebel'
+            };
+        if (code <= 59)
+            return {
+                icon: '🌦️',
+                label: 'Niesel'
+            };
+        if (code <= 69)
+            return {
+                icon: '🌧️',
+                label: 'Regen'
+            };
+        if (code <= 79)
+            return {
+                icon: '❄️',
+                label: 'Schnee'
+            };
+        if (code <= 84)
+            return {
+                icon: '🌦️',
+                label: 'Schauer'
+            };
+        return {
+            icon: '⛈️',
+            label: 'Gewitter'
+        };
+    }
+    async function loadWeather(lat, lng, placeName) {
+        const el = document.getElementById('weather-strip');
+        const loc = document.getElementById('weather-location');
+        const upd = document.getElementById('weather-updated');
+        if (!el)
+            return;
+        el.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:8px">Wetter wird geladen…</div>';
+        if (loc)
+            loc.textContent = placeName || 'Aktueller Standort';
+        try {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&hourly=temperature_2m,precipitation_probability,weathercode,windspeed_10m&timezone=auto&forecast_days=2`;
+            const r = await fetch(url);
+            const d = await r.json();
+            const now = new Date();
+            const nowH = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours());
+            const hours = d.hourly.time.map((t, i) => ({
+                time: new Date(t),
+                temp: d.hourly.temperature_2m[i],
+                precip: d.hourly.precipitation_probability[i],
+                code: d.hourly.weathercode[i],
+                wind: d.hourly.windspeed_10m[i]
+            }));
+            const slots = hours.filter(h => h.time >= nowH).slice(0, 24).filter((_, i) => i % 3 === 0);
+            el.innerHTML = slots.map((h, i) => {
+                const w = wmoIcon(h.code);
+                const label = i === 0 ? 'Jetzt' : h.time.toLocaleTimeString('de', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                const pc = h.precip > 60 ? 'var(--blue)' : h.precip > 30 ? 'var(--amber)' : 'var(--text3)';
+                return `<div class="weather-slot"><div class="ws-time">${label}</div><div class="ws-icon">${w.icon}</div><div class="ws-temp">${Math.round(h.temp)}°</div><div class="ws-precip" style="color:${pc}">${h.precip}%</div><div class="ws-wind">${Math.round(h.wind)} km/h</div></div>`;
+            }).join('');
+            if (upd)
+                upd.textContent = 'Stand: ' + now.toLocaleTimeString('de', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+        } catch (e) {
+            el.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:8px">Wetter nicht verfügbar</div>';
+        }
+    }
+    window.refreshWeather = function() {
+        const btn = document.getElementById('weather-refresh-btn');
+        if (btn) {
+            btn.style.transform = 'rotate(360deg)';
+            setTimeout(() => btn.style.transform = '', 500);
+        }
+        detectSessionCurrency();
+    };
+
+    // ── AUSGABEN ────────────────────────────────────────────────────────
     window.addExpense = async function() {
+        if (isArchived) {
+            showToast('Archivierte Reise – nur Lesezugriff');
+            return;
+        }
         const data = window._tripData;
         if (!data)
             return;
@@ -2412,59 +2788,34 @@
         }
         haptic('light');
         const amountEUR = toEUR(amt, currency);
-        if (editingExpId) {
-            const old = data.expenses.find(e => e.id === editingExpId);
-            if (!old)
-                return;
-            const updated = {
-                ...old,
-                catId,
-                desc: desc || getCat(catId).name,
-                amount: amt,
-                amountEUR,
-                currency,
-                editedBy: myName
-            };
-            try {
-                await updateDoc(doc(db, 'trips', tripCode), {
-                    expenses: arrayRemove(old)
-                });
-                await updateDoc(doc(db, 'trips', tripCode), {
-                    expenses: arrayUnion(updated)
-                });
-                showToast('Aktualisiert');
-            }
-            catch (err) {
-                showToast('Fehler: ' + err.message);
-            }
-            cancelEdit();
-        } else {
-            const expense = {
-                id: 'e' + Date.now(),
-                catId,
-                desc: desc || getCat(catId).name,
-                amount: amt,
-                amountEUR,
-                currency,
-                date: today(),
-                addedBy: myName
-            };
-            try {
-                await updateDoc(doc(db, 'trips', tripCode), {
-                    expenses: arrayUnion(expense)
-                });
-                document.getElementById('qa-desc').value = '';
-                document.getElementById('qa-amt').value = '';
-                if (totalSpentEUR(data.expenses) / data.total < 0.45)
-                    confetti();
-            } catch (err) {
-                showToast('Fehler: ' + err.message);
-            }
+        const expense = {
+            id: 'e' + Date.now(),
+            catId,
+            desc: desc || getCat(catId).name,
+            amount: amt,
+            amountEUR,
+            currency,
+            date: today(),
+            addedBy: myName
+        };
+        try {
+            await updateDoc(doc(db, 'trips', tripCode), {
+                expenses: arrayUnion(expense)
+            });
+            document.getElementById('qa-desc').value = '';
+            document.getElementById('qa-amt').value = '';
+            if (totalSpentEUR(data.expenses) / data.total < 0.45)
+                confetti();
+        } catch (err) {
+            showToast('Fehler: ' + err.message);
         }
     };
 
-    // ── Expense Edit Modal ────────────────────────────────────────────
     window.openExpenseEdit = function(expId) {
+        if (isArchived) {
+            showToast('Archivierte Reise – nur Lesezugriff');
+            return;
+        }
         const data = window._tripData;
         if (!data)
             return;
@@ -2499,13 +2850,12 @@
             showToast('Betrag und Datum ausfüllen');
             return;
         }
-        const amountEUR = toEUR(amt, currency);
         const updated = {
             ...old,
             catId,
             desc: desc || getCat(catId).name,
             amount: amt,
-            amountEUR,
+            amountEUR: toEUR(amt, currency),
             currency,
             date,
             editedBy: myName
@@ -2517,7 +2867,7 @@
             await updateDoc(doc(db, 'trips', tripCode), {
                 expenses: arrayUnion(updated)
             });
-            showToast('Ausgabe aktualisiert');
+            showToast('Aktualisiert');
         } catch (err) {
             showToast('Fehler: ' + err.message);
         }
@@ -2543,21 +2893,6 @@
         }
         closeExpenseEdit();
     };
-
-    // Quick-add edit (inline)
-    window.startEdit = function(expId) {
-        openExpenseEdit(expId);
-    };
-    window.cancelEdit = function() {
-        editingExpId = null;
-        document.getElementById('qa-desc').value = '';
-        document.getElementById('qa-amt').value = '';
-        document.getElementById('qa-currency').value = 'EUR';
-        document.getElementById('qa-add-btn').textContent = '＋';
-        document.getElementById('qa-cancel-btn').style.display = 'none';
-        document.getElementById('qa-edit-hint').style.display = 'none';
-    };
-
     window.delExpense = async function(expId) {
         const data = window._tripData;
         if (!data)
@@ -2576,96 +2911,19 @@
             showToast('Fehler: ' + err.message);
         }
     };
-
-    // ── Swipe to delete ───────────────────────────────────────────────
-    function addSwipeToDelete(el, expId) {
-        let startX = 0,
-            dx = 0,
-            swiping = false;
-        el.addEventListener('touchstart', e => {
-            startX = e.touches[0].clientX;
-            swiping = true;
-            dx = 0;
-        }, {
-            passive: true
-        });
-        el.addEventListener('touchmove', e => {
-            if (!swiping)
-                return;
-            dx = e.touches[0].clientX - startX;
-            if (dx < 0)
-                el.style.transform = `translateX(${Math.max(dx, -80)}px)`;
-        }, {
-            passive: true
-        });
-        el.addEventListener('touchend', () => {
-            if (dx < -60) {
-                el.style.transform = 'translateX(-80px)';
-                setTimeout(() => {
-                    el.style.transform = '';
-                    delExpense(expId);
-                }, 300);
-            } else {
-                el.style.transform = '';
-            }
-            swiping = false;
-        });
-    }
-
-    // ── GPS ───────────────────────────────────────────────────────────
-    window.locateMe = function() {
-        const btn = document.getElementById('gps-btn');
-        if (!navigator.geolocation) {
-            showToast('GPS nicht verfügbar');
-            return;
-        }
-        btn.disabled = true;
-        btn.textContent = 'GPS...';
-        navigator.geolocation.getCurrentPosition(async pos => {
-            try {
-                const {latitude: lat, longitude: lng} = pos.coords;
-                const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=de`);
-                const d = await r.json();
-                const cc = (d.address?.country_code || '').toUpperCase();
-                if (COUNTRY_CURRENCY[cc] && !sessionCurrency) {
-                    sessionCurrency = COUNTRY_CURRENCY[cc];
-                    updateFXDisplay();
-                    const fromSel2 = document.getElementById('conv-from');
-                    if (fromSel2)
-                        fromSel2.value = sessionCurrency.code;
-                }
-                const place = d.address?.city || d.address?.town || d.address?.village || d.address?.county || 'Aktueller Standort';
-                const country = d.address?.country || '';
-                // Fill stop-name input
-                const inp = document.getElementById('stop-name');
-                inp.value = place + (country ? ', ' + country : '');
-                inp.dataset.lat = lat;
-                inp.dataset.lng = lng;
-                acSelected = {
-                    lat,
-                    lng
-                };
-                // Refresh weather
-                await loadWeather(lat, lng, place);
-                showToast('Standort: ' + place);
-            } catch (e) {
-                showToast('Standort nicht bestimmbar');
-            }
-            finally {
-                btn.disabled = false;
-                btn.textContent = '📍 GPS';
-            }
-        }, () => {
-            showToast('GPS-Zugriff verweigert');
-            btn.disabled = false;
-            btn.textContent = '📍 GPS';
-        }, {
-            timeout: 10000,
-            enableHighAccuracy: true
-        });
+    window.startEdit = function(expId) {
+        openExpenseEdit(expId);
+    };
+    window.cancelEdit = function() {
+        document.getElementById('qa-desc').value = '';
+        document.getElementById('qa-amt').value = '';
+        document.getElementById('qa-currency').value = 'EUR';
+        document.getElementById('qa-add-btn').textContent = '＋';
+        document.getElementById('qa-cancel-btn').style.display = 'none';
+        document.getElementById('qa-edit-hint').style.display = 'none';
     };
 
-    // ── Stops ─────────────────────────────────────────────────────────
+    // ── STOPS ───────────────────────────────────────────────────────────
     async function resolveGeo(nameEl) {
         if (acSelected)
             return acSelected;
@@ -2681,8 +2939,11 @@
         }
         return await geocode(nameEl.value.trim());
     }
-
     window.addStop = async function() {
+        if (isArchived) {
+            showToast('Archivierte Reise – nur Lesezugriff');
+            return;
+        }
         const nameEl = document.getElementById('stop-name');
         const name = nameEl.value.trim();
         const note = document.getElementById('stop-note').value.trim();
@@ -2693,11 +2954,11 @@
         }
         const btn = document.getElementById('stop-add-btn');
         btn.disabled = true;
-        btn.textContent = 'Suche Ort...';
+        btn.textContent = 'Suche...';
         try {
             const geo = await resolveGeo(nameEl);
             if (!geo) {
-                showToast('Ort nicht gefunden – genauer eingeben');
+                showToast('Ort nicht gefunden');
                 return;
             }
             const data = window._tripData;
@@ -2736,8 +2997,11 @@
             btn.textContent = 'Station hinzufügen';
         }
     };
-
     window.openStopEdit = function(stopId) {
+        if (isArchived) {
+            showToast('Archivierte Reise – nur Lesezugriff');
+            return;
+        }
         const data = window._tripData;
         if (!data)
             return;
@@ -2845,112 +3109,50 @@
         }
         closeStopEdit();
     };
-
-    // ── CSV Export ────────────────────────────────────────────────────
-    window.exportCSV = function() {
+    window.moveStop = async function(stopId, direction) {
         const data = window._tripData;
-        if (!data || !data.expenses?.length) {
-            showToast('Keine Ausgaben zum Exportieren');
+        if (!data)
+            return;
+        const stops = getSortedStops(data.stops || []);
+        const idx = stops.findIndex(s => s.id === stopId);
+        if (idx < 0)
+            return;
+        const newIdx = idx + direction;
+        if (newIdx < 0 || newIdx >= stops.length)
+            return;
+        const a = stops[idx],
+            b = stops[newIdx];
+        if (a.date === b.date) {
+            showToast('Gleiches Datum – Datum zuerst im ✏️ ändern');
             return;
         }
-        const rows = [['Datum', 'Kategorie', 'Beschreibung', 'Betrag (Original)', 'Währung', 'Betrag (EUR)', 'Hinzugefügt von']];
-        const sorted = [...data.expenses].sort((a, b) => a.date.localeCompare(b.date));
-        sorted.forEach(e => {
-            rows.push([e.date, getCat(e.catId).name, e.desc, e.amount, e.currency || 'EUR', (e.amountEUR ?? e.amount ?? 0).toFixed(2), e.addedBy || '']);
-        });
-        const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
-        const blob = new Blob(['\uFEFF' + csv], {
-            type: 'text/csv;charset=utf-8;'
-        });
-        downloadBlob(blob, 'budgio-ausgaben-' + (data.name || '').replace(/\s/g, '_') + '.csv');
-        showToast('📥 Ausgaben CSV exportiert');
-    };
-
-    window.exportRouteCSV = function() {
-        const data = window._tripData;
-        const stops = getSortedStops(data?.stops || []);
-        if (!stops.length) {
-            showToast('Keine Stationen zum Exportieren');
-            return;
+        const aUpd = {
+                ...a,
+                date: b.date
+            },
+            bUpd = {
+                ...b,
+                date: a.date
+            };
+        try {
+            await updateDoc(doc(db, 'trips', tripCode), {
+                stops: arrayRemove(a)
+            });
+            await updateDoc(doc(db, 'trips', tripCode), {
+                stops: arrayRemove(b)
+            });
+            await updateDoc(doc(db, 'trips', tripCode), {
+                stops: arrayUnion(aUpd)
+            });
+            await updateDoc(doc(db, 'trips', tripCode), {
+                stops: arrayUnion(bUpd)
+            });
+        } catch (err) {
+            showToast('Fehler: ' + err.message);
         }
-        const rows = [['Station', 'Datum', 'Etappe km', 'Gesamt km', 'Fähre', 'Notiz', 'Breitengrad', 'Längengrad']];
-        let cumKm = 0;
-        stops.forEach((s, i) => {
-            cumKm += s.km || 0;
-            rows.push([
-            s.name, s.date,
-            i === 0 ? '–' : (s.km || 0),
-            i === 0 ? 0 : cumKm,
-            s.ferry ? 'Ja' : 'Nein',
-            s.note || '',
-            s.lat.toFixed(6), s.lng.toFixed(6)
-            ]);
-        });
-        const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
-        const blob = new Blob(['\uFEFF' + csv], {
-            type: 'text/csv;charset=utf-8;'
-        });
-        downloadBlob(blob, 'budgio-route-' + (data.name || '').replace(/\s/g, '_') + '.csv');
-        showToast('📥 Route CSV exportiert');
     };
 
-    window.exportRouteGPX = function() {
-        const data = window._tripData;
-        const stops = getSortedStops(data?.stops || []);
-        if (!stops.length) {
-            showToast('Keine Stationen zum Exportieren');
-            return;
-        }
-        const tripName = (data?.name || 'Budgio Route').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        const wpts = stops.map(s => {
-            const name = (s.name || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            const desc = (s.note || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            return `  <wpt lat="${s.lat.toFixed(6)}" lon="${s.lng.toFixed(6)}">\n    <name>${name}</name>\n    <desc>${desc}</desc>\n    <time>${s.date}T12:00:00Z</time>\n  </wpt>`;
-        }).join('\n');
-        const trkpts = stops.map(s =>
-        `      <trkpt lat="${s.lat.toFixed(6)}" lon="${s.lng.toFixed(6)}">\n        <time>${s.date}T12:00:00Z</time>\n      </trkpt>`
-        ).join('\n');
-        const gpx = `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="Budgio" xmlns="http://www.topografix.com/GPX/1/1">
-  <metadata>
-    <name>${
-
-        tripName}</name>
-    <time>${new Date().toISOString()}</time>
-  </metadata>
-${
-        wpts}
-  <trk>
-    <name>${
-        tripName}</name>
-    <trkseg>
-${
-        trkpts}
-    </trkseg>
-  </trk>
-</gpx>`
-
-
-        ;
-        const blob = new Blob([gpx], {
-            type: 'application/gpx+xml'
-        });
-        downloadBlob(blob, 'budgio-route-' + (data.name || '').replace(/\s/g, '_') + '.gpx');
-        showToast('📍 Route GPX exportiert');
-    };
-
-    function downloadBlob(blob, filename) {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
-
-    // ── Settings ──────────────────────────────────────────────────────
+    // ── SETTINGS ────────────────────────────────────────────────────────
     window.saveSettings = async function() {
         const name = document.getElementById('cfg-name').value.trim();
         const total = parseFloat(document.getElementById('cfg-total').value);
@@ -2978,22 +3180,113 @@ ${
             showToast('Fehler: ' + err.message);
         }
     };
+    window.archiveTrip = async function() {
+        if (!confirm('Reise archivieren? Sie wird danach nur noch lesbar sein.'))
+            return;
+        try {
+            await updateDoc(doc(db, 'trips', tripCode), {
+                status: 'archived'
+            });
+            setArchiveStatus(tripCode, 'archived');
+            isArchived = true;
+            document.getElementById('archived-banner').classList.add('show');
+            document.getElementById('qa-bar').style.display = 'none';
+            showToast('📦 Reise archiviert');
+        } catch (err) {
+            showToast('Fehler: ' + err.message);
+        }
+    };
     window.leaveTrip = function() {
-        if (!confirm('Reise verlassen?'))
+        if (!confirm('Reise verlassen? Daten bleiben in Firebase erhalten.'))
             return;
         if (unsubscribe)
             unsubscribe();
-        localStorage.removeItem('budgio_session');
-        location.reload();
+        localStorage.removeItem('budgio_last');
+        showHome();
     };
     window.copyCode = function() {
-        const code = window._tripCode;
-        if (!code)
-            return;
-        navigator.clipboard?.writeText(code).then(() => showToast('Code kopiert!'));
+        navigator.clipboard?.writeText(window._tripCode || '').then(() => showToast('Code kopiert!'));
     };
 
-    // ── Tab switch ────────────────────────────────────────────────────
+    // ── FX TABLE ────────────────────────────────────────────────────────
+    window.renderFXTable = function() {
+        const tbody = document.getElementById('fx-tbody');
+        if (!tbody)
+            return;
+        const tripCurs = (window._tripData?.currencies || ['DKK', 'NOK', 'SEK']).filter(c => c !== 'EUR');
+        const thead = document.getElementById('fx-thead');
+        if (thead) {
+            const cur = sessionCurrency && tripCurs.includes(sessionCurrency) ? sessionCurrency : tripCurs[0] || 'kr';
+            thead.innerHTML = `<tr><th></th><th>Währung</th><th style="text-align:right">1 € =</th><th style="text-align:right">100 ${cur} =</th></tr>`;
+        }
+        tbody.innerHTML = tripCurs.map(code => {
+            const ci = getCurInfo(code);
+            const rate = FX[code] || 1;
+            return `<tr><td class="flag">${ci.flag}</td><td><b>${ci.code}</b><div style="font-size:10px;color:var(--text2)">${ci.name}</div></td><td class="rate">${rate.toFixed(2)}</td><td class="rate">${(100 / rate).toFixed(2)}</td></tr>`;
+        }).join('');
+        const upd = document.getElementById('fx-updated-time');
+        if (upd && fxUpdatedAt)
+            upd.textContent = 'Kurse vom ' + fxUpdatedAt.toLocaleTimeString('de', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+    };
+
+    // ── CONVERTER ───────────────────────────────────────────────────────
+    function buildConverterSelects() {
+        const data = window._tripData;
+        const tripCurs = data?.currencies || ['EUR', 'DKK', 'NOK', 'SEK'];
+        const opts = tripCurs.map(code => {
+            const ci = getCurInfo(code);
+            return `<option value="${code}">${ci.flag} ${ci.code}</option>`;
+        }).join('');
+        const fromSel = document.getElementById('conv-from');
+        const toSel = document.getElementById('conv-to');
+        if (fromSel)
+            fromSel.innerHTML = opts;
+        if (toSel)
+            toSel.innerHTML = opts;
+        // Default: first non-EUR on top, EUR on bottom
+        const nonEUR = tripCurs.filter(c => c !== 'EUR');
+        if (fromSel && nonEUR.length)
+            fromSel.value = nonEUR[0];
+        if (toSel)
+            toSel.value = 'EUR';
+    }
+    window.convertCurrency = function() {
+        const amt = parseFloat(document.getElementById('conv-amount').value);
+        const from = document.getElementById('conv-from').value;
+        const to = document.getElementById('conv-to').value;
+        const resultEl = document.getElementById('conv-result');
+        const hintEl = document.getElementById('conv-rate-hint');
+        if (!amt || isNaN(amt) || amt <= 0) {
+            resultEl.textContent = '–';
+            hintEl.textContent = '';
+            return;
+        }
+        const inEUR = from === 'EUR' ? amt : amt / (FX[from] || 1);
+        const result = to === 'EUR' ? inEUR : inEUR * (FX[to] || 1);
+        const ci = getCurInfo(to);
+        resultEl.textContent = result.toFixed(2) + ' ' + ci.code;
+        const oneInEUR = from === 'EUR' ? 1 : 1 / (FX[from] || 1);
+        const rate = to === 'EUR' ? oneInEUR : oneInEUR * (FX[to] || 1);
+        hintEl.textContent = '1 ' + from + ' = ' + rate.toFixed(4) + ' ' + to;
+    };
+    window.swapCurrencies = function() {
+        const f = document.getElementById('conv-from'),
+            t = document.getElementById('conv-to');
+        const tmp = f.value;
+        f.value = t.value;
+        t.value = tmp;
+        const btn = document.getElementById('swap-btn');
+        if (btn) {
+            btn.style.transform = 'rotate(180deg)';
+            setTimeout(() => btn.style.transform = '', 300);
+        }
+        convertCurrency();
+    };
+
+    // ── TAB SWITCH ──────────────────────────────────────────────────────
     window.switchTab = function(tab) {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -3011,7 +3304,7 @@ ${
             qa.style.display = 'none';
             cancelEdit();
         }
-        else
+        else if (!isArchived)
             qa.style.display = 'block';
         if (tab === 'settings')
             fillSettings(window._tripData);
@@ -3024,7 +3317,7 @@ ${
             }, 120);
         }
         if (tab === 'today') {
-            renderFXTable();
+            window.renderFXTable();
             if (window._tripData)
                 renderToday(window._tripData);
         }
@@ -3034,19 +3327,16 @@ ${
         }
     };
 
-    // ══ RENDER ═══════════════════════════════════════════════════════
+    // ══ RENDER ══════════════════════════════════════════════════════════
     function render(data) {
         renderHeader(data);
         renderOverview(data);
         renderToday(data);
         renderHistory(data);
         renderRoute(data);
+        buildConverterSelects();
         if (document.getElementById('sec-route').classList.contains('active'))
             renderMap(getSortedStops(data.stops || []));
-    }
-
-    function getSortedStops(stops) {
-        return [...stops].sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
     }
 
     function renderHeader(data) {
@@ -3075,11 +3365,9 @@ ${
         const spent = totalSpentEUR(expenses);
         const remaining = total - spent;
         const moneyPct = Math.min(100, Math.round(spent / total * 100));
-
         document.getElementById('hero-num').textContent = Math.max(0, remaining).toFixed(0);
         document.getElementById('hero-rem').className = 'hero-remaining' + (remaining < 0 ? ' danger' : moneyPct > timePct + 10 ? ' warn' : '');
         document.getElementById('hero-of').textContent = 'von €' + total.toFixed(0) + ' · ' + moneyPct + '% verbraucht';
-
         const pill = document.getElementById('status-pill');
         const diff = moneyPct - timePct;
         if (!spent) {
@@ -3098,32 +3386,27 @@ ${
             pill.textContent = '⚠️ Überpace';
             pill.className = 'status-pill pill-warn';
         }
-
         document.getElementById('bar-time').style.width = timePct + '%';
         document.getElementById('time-pct').textContent = timePct + '%';
         const bb = document.getElementById('bar-budget');
         bb.style.width = moneyPct + '%';
         bb.className = 'bar-fill fill-budget' + (moneyPct > timePct + 10 ? ' over' : '');
         document.getElementById('budget-pct').textContent = moneyPct + '%';
-
         const daysLeft = Math.max(0, (e - now) / 86400000);
         const avg = spent / Math.max(.01, elapsed);
         const leftFore = total - (spent + avg * daysLeft);
         const fe = document.getElementById('forecast');
         fe.textContent = spent ? ((leftFore >= 0 ? '+' : '') + leftFore.toFixed(0) + ' €') : '–';
         fe.style.color = leftFore >= 0 ? 'var(--green)' : 'var(--red)';
-
         const todaySpent = expenses.filter(ex => ex.date === today()).reduce((a, ex) => a + (ex.amountEUR ?? ex.amount ?? 0), 0);
         document.getElementById('day-sub').textContent = 'von €' + daily.toFixed(0) + ' Tagesbudget';
         const dn = document.getElementById('day-spent-num');
         dn.textContent = '€' + todaySpent.toFixed(0);
         dn.className = 'right ' + (todaySpent > daily ? 'over' : 'ok');
-
         document.getElementById('stat-avg').textContent = '€' + avg.toFixed(0);
         document.getElementById('stat-ideal').textContent = '€' + (daysLeft > 0 ? (remaining / daysLeft).toFixed(0) : '0');
         document.getElementById('stat-days').textContent = Math.max(0, Math.ceil(daysLeft));
         document.getElementById('stat-total-spent').textContent = '€' + spent.toFixed(0);
-
         const ratio = timePct > 0 ? (moneyPct / timePct) : null;
         const [bei, bti, bsu] = [document.getElementById('burn-emoji'), document.getElementById('burn-title'), document.getElementById('burn-sub')];
         if (!spent || !ratio) {
@@ -3144,14 +3427,13 @@ ${
         else if (ratio <= 1.3) {
             bei.textContent = '⚡';
             bti.textContent = 'Leicht über Tempo';
-            bsu.textContent = Math.round((ratio - 1) * 100) + '% schneller als geplant';
+            bsu.textContent = Math.round((ratio - 1) * 100) + '% schneller';
         }
         else {
             bei.textContent = '🔥';
             bti.textContent = 'Hohe Burn Rate!';
             bsu.textContent = Math.round((ratio - 1) * 100) + '% über dem Zeitplan';
         }
-
         const catTotals = {};
         expenses.forEach(ex => {
             catTotals[ex.catId] = (catTotals[ex.catId] || 0) + (ex.amountEUR ?? ex.amount ?? 0);
@@ -3196,48 +3478,37 @@ ${
         }
         document.getElementById('today-tx-list').innerHTML = exps.length
         ? exps.map(e => txHTML(e, true)).join('')
-        : '<div class="empty"><div class="empty-icon">☀️</div><p>Heute noch keine Ausgaben</p><button class="empty-action" onclick="document.getElementById(\'qa-amt\').focus()">Erste Ausgabe eintragen</button></div>';
-        renderFXTable();
+        : '<div class="empty"><div class="empty-icon">🌐</div><p>Heute noch keine Ausgaben</p><button class="empty-action" onclick="document.getElementById(\'qa-amt\').focus()">Erste Ausgabe eintragen</button></div>';
+        window.renderFXTable && window.renderFXTable();
     }
 
     function renderHistory(data) {
         const allExpenses = [...(data.expenses || [])].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
         const histDiv = document.getElementById('all-tx-list');
-
         if (!allExpenses.length) {
             document.getElementById('history-chart').style.display = 'none';
             histDiv.innerHTML = '<div class="empty"><div class="empty-icon">🧾</div><p>Noch keine Ausgaben</p></div>';
             document.getElementById('filter-summary').style.display = 'none';
             return;
         }
-
-        // Pie chart (always full dataset)
         document.getElementById('history-chart').style.display = 'block';
         renderPieChart(allExpenses);
-
-        // Populate category filter (only categories that have expenses)
         const usedCats = [...new Set(allExpenses.map(e => e.catId))];
         const catSel = document.getElementById('filter-cat');
-        const prevCat = catSel.value;
-        catSel.innerHTML = '<option value="">Alle Kategorien</option>'
-        + usedCats.map(id => {
+        const prev = catSel.value;
+        catSel.innerHTML = '<option value="">Alle Kategorien</option>' + usedCats.map(id => {
             const c = getCat(id);
             return `<option value="${id}">${c.emoji} ${c.name}</option>`;
         }).join('');
-        if (prevCat)
-            catSel.value = prevCat;
-
-        // Pre-fill date range with trip dates on first load
+        if (prev)
+            catSel.value = prev;
         const fromEl = document.getElementById('filter-from');
         const toEl = document.getElementById('filter-to');
         if (!fromEl.value && data.start)
             fromEl.value = data.start;
         if (!toEl.value && data.end)
             toEl.value = data.end;
-
-        // Store full expense list on window for filter access
         window._allExpenses = allExpenses;
-
         applyFilter();
     }
 
@@ -3246,12 +3517,6 @@ ${
         const catFilter = document.getElementById('filter-cat')?.value || '';
         const fromFilter = document.getElementById('filter-from')?.value || '';
         const toFilter = document.getElementById('filter-to')?.value || '';
-        const histDiv = document.getElementById('all-tx-list');
-        const summaryEl = document.getElementById('filter-summary');
-        const countEl = document.getElementById('filter-count');
-        const totalEl = document.getElementById('filter-total');
-        const labelEl = document.getElementById('history-list-label');
-
         let filtered = allExpenses;
         if (catFilter)
             filtered = filtered.filter(e => e.catId === catFilter);
@@ -3259,28 +3524,22 @@ ${
             filtered = filtered.filter(e => e.date >= fromFilter);
         if (toFilter)
             filtered = filtered.filter(e => e.date <= toFilter);
-
         const isFiltered = !!(catFilter || fromFilter || toFilter);
         const filterTotal = filtered.reduce((a, e) => a + (e.amountEUR ?? e.amount ?? 0), 0);
-
-        // Update label
-        if (labelEl)
-            labelEl.textContent = isFiltered ? 'Gefilterte Ausgaben' : 'Alle Ausgaben';
-
-        // Summary bar
+        document.getElementById('history-list-label').textContent = isFiltered ? 'Gefilterte Ausgaben' : 'Alle Ausgaben';
+        const summaryEl = document.getElementById('filter-summary');
         if (isFiltered && filtered.length) {
             summaryEl.style.display = 'flex';
-            countEl.textContent = filtered.length + ' Ausgabe' + (filtered.length !== 1 ? 'n' : '');
-            totalEl.textContent = '€' + filterTotal.toFixed(2);
+            document.getElementById('filter-count').textContent = filtered.length + ' Ausgabe' + (filtered.length !== 1 ? 'n' : '');
+            document.getElementById('filter-total').textContent = '€' + filterTotal.toFixed(2);
         } else if (isFiltered && !filtered.length) {
             summaryEl.style.display = 'flex';
-            countEl.textContent = 'Keine Treffer';
-            totalEl.textContent = '€0.00';
+            document.getElementById('filter-count').textContent = 'Keine Treffer';
+            document.getElementById('filter-total').textContent = '€0.00';
         } else {
             summaryEl.style.display = 'none';
         }
-
-        // Render grouped list
+        const histDiv = document.getElementById('all-tx-list');
         if (!filtered.length) {
             histDiv.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div><p>Keine Ausgaben gefunden</p></div>';
             return;
@@ -3293,11 +3552,9 @@ ${
         });
         histDiv.innerHTML = Object.entries(groups).map(([date, exps]) => {
             const dayTotal = exps.reduce((a, e) => a + (e.amountEUR ?? e.amount ?? 0), 0);
-            return '<div class="day-group-header"><span>' + fmtDate(date) + '</span><span class="day-group-total">€' + dayTotal.toFixed(2) + '</span></div>'
-            + exps.map(e => txHTML(e, true)).join('');
+            return '<div class="day-group-header"><span>' + fmtDate(date) + '</span><span class="day-group-total">€' + dayTotal.toFixed(2) + '</span></div>' + exps.map(e => txHTML(e, true)).join('');
         }).join('');
     };
-
     window.clearFilter = function() {
         const data = window._tripData;
         if (!data)
@@ -3317,15 +3574,14 @@ ${
         if (!total)
             return;
         const entries = Object.entries(catTotals).sort((a, b) => b[1] - a[1]).slice(0, 6);
-
         let startAngle = 0;
         const cx = 60,
             cy = 60,
             r = 54;
         let paths = '';
         entries.forEach(([id, val]) => {
-            const pct = val / total;
-            const angle = pct * 2 * Math.PI;
+            const pct = val / total,
+                angle = pct * 2 * Math.PI;
             const x1 = cx + r * Math.sin(startAngle),
                 y1 = cy - r * Math.cos(startAngle);
             const x2 = cx + r * Math.sin(startAngle + angle),
@@ -3335,10 +3591,8 @@ ${
             paths += `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z" fill="${col}" opacity="0.85"/>`;
             startAngle += angle;
         });
-        // Center hole
         paths += `<circle cx="${cx}" cy="${cy}" r="28" fill="var(--surface)"/>`;
         paths += `<text x="${cx}" y="${cy + 5}" text-anchor="middle" font-size="11" fill="var(--text2)" font-family="Instrument Sans">€${Math.round(total)}</text>`;
-
         document.getElementById('pie-svg').innerHTML = paths;
         document.getElementById('pie-legend').innerHTML = entries.map(([id, val]) => {
             const c = getCat(id);
@@ -3354,10 +3608,8 @@ ${
         const origAmt = (e.currency && e.currency !== 'EUR') ? '<span style="font-size:10px;color:var(--text2);margin-left:4px">' + e.amount?.toFixed(0) + ' ' + e.currency + '</span>' : '';
         return '<div class="tx">'
         + '<div class="tx-icon" style="background:' + col + '22">' + c.emoji + '</div>'
-        + '<div class="tx-body">'
-        + '<div class="tx-name">' + e.desc + (e.editedBy ? '<span class="edited-tag">bearbeitet</span>' : '') + '</div>'
-        + '<div class="tx-meta"><span class="cat-badge c-' + e.catId + '" style="padding:1px 6px;font-size:10px">' + c.name + '</span></div>'
-        + '</div>'
+        + '<div class="tx-body"><div class="tx-name">' + e.desc + (e.editedBy ? '<span class="edited-tag">bearbeitet</span>' : '') + '</div>'
+        + '<div class="tx-meta"><span class="cat-badge c-' + e.catId + '" style="padding:1px 6px;font-size:10px">' + c.name + '</span></div></div>'
         + '<div class="tx-right"><div class="tx-amt">€' + (e.amountEUR ?? e.amount ?? 0).toFixed(2) + '</div>' + origAmt + '</div>'
         + '<div class="tx-actions"><button class="tx-edit" onclick="openExpenseEdit(\'' + e.id + '\')">✏️</button><button class="tx-del" onclick="delExpense(\'' + e.id + '\')">🗑</button></div>'
         + '</div>';
@@ -3369,99 +3621,35 @@ ${
         document.getElementById('route-stops').textContent = stops.length;
         document.getElementById('route-km').textContent = km > 0 ? km + ' km' : '–';
         checkKmMilestone(km);
-
         const list = document.getElementById('stop-list');
         if (!stops.length) {
-            list.innerHTML = '<div class="empty"><div class="empty-icon">🗺️</div><p>Noch keine Stationen eingetragen</p><button class="empty-action" onclick="document.getElementById(\'stop-name\').focus()">Erste Station hinzufügen</button></div>';
-        } else {
-            // Build cumulative km array forward (start→end)
-            let cumKms = [0];
-            for (let i = 1; i < stops.length; i++)
-                cumKms.push(cumKms[i - 1] + (stops[i].km || 0));
-
-            // Display reversed: newest on top
-            const reversed = [...stops].reverse();
-            list.innerHTML = reversed.map((s, ri) => {
-                const i = stops.length - 1 - ri; // original index
-                const isFirst = i === 0;
-                const isLast = i === stops.length - 1;
-                const modeIcon = isFirst ? '🏁' : s.ferry ? '⛴️' : '🚗';
-                const segKm = isFirst ? 'Startpunkt' : (s.km ? s.km + ' km' : '– km');
-                const cumLabel = i > 0 && cumKms[i] > 0 ? ' · Σ ' + cumKms[i] + ' km' : '';
-                const canMoveUp = i < stops.length - 1; // visually "up" = later in trip = higher index
-                const canMoveDown = i > 0; // visually "down" = earlier in trip = lower index
-                return '<div class="stop-item">'
-                + '<div class="stop-connector">'
-                + '<div class="stop-dot' + (isLast ? ' stop-dot-active' : '') + '"></div>'
-                + (ri < reversed.length - 1 ? '<div class="stop-line"></div>' : '')
-                + '</div>'
-                + '<div class="seg-badge' + (isFirst ? ' seg-start' : s.ferry ? ' seg-ferry' : '') + '">' + modeIcon + ' ' + segKm + '</div>'
-                + '<div class="stop-body">'
-                + '<div class="stop-name">' + s.name + '</div>'
-                + '<div class="stop-meta">' + fmtDate(s.date) + cumLabel + (s.note ? ' · ' + s.note : '') + '</div>'
-                + '</div>'
-                + '<div class="stop-actions">'
-                + (canMoveUp ? '<button class="tx-edit" onclick="moveStop(\'' + s.id + '\',1)" title="Später einordnen">↑</button>' : '<span style="width:20px"></span>')
-                + (canMoveDown ? '<button class="tx-edit" onclick="moveStop(\'' + s.id + '\',-1)" title="Früher einordnen">↓</button>' : '<span style="width:20px"></span>')
-                + '<button class="tx-edit" onclick="openStopEdit(\'' + s.id + '\')">✏️</button>'
-                + '</div>'
-                + '</div>';
-            }).join('');
+            list.innerHTML = '<div class="empty"><div class="empty-icon">🗺️</div><p>Noch keine Stationen</p><button class="empty-action" onclick="document.getElementById(\'stop-name\').focus()">Erste Station hinzufügen</button></div>';
+            return;
         }
+        let cumKms = [0];
+        for (let i = 1; i < stops.length; i++)
+            cumKms.push(cumKms[i - 1] + (stops[i].km || 0));
+        const reversed = [...stops].reverse();
+        list.innerHTML = reversed.map((s, ri) => {
+            const i = stops.length - 1 - ri;
+            const isFirst = i === 0;
+            const isLast = i === stops.length - 1;
+            const modeIcon = isFirst ? '🏁' : s.ferry ? '⛴️' : '🚗';
+            const segKm = isFirst ? 'Startpunkt' : (s.km ? s.km + ' km' : '– km');
+            const cumLabel = i > 0 && cumKms[i] > 0 ? ' · Σ ' + cumKms[i] + ' km' : '';
+            const canMoveUp = i < stops.length - 1,
+                canMoveDown = i > 0;
+            const editBtns = isArchived ? ''
+            : (canMoveUp ? '<button class="tx-edit" onclick="moveStop(\'' + s.id + '\',1)" title="Höher">↑</button>' : '<span style="width:20px"></span>')
+            + (canMoveDown ? '<button class="tx-edit" onclick="moveStop(\'' + s.id + '\',-1)" title="Tiefer">↓</button>' : '<span style="width:20px"></span>')
+            + '<button class="tx-edit" onclick="openStopEdit(\'' + s.id + '\')">✏️</button>';
+            return '<div class="stop-item">'
+            + '<div class="stop-connector"><div class="stop-dot' + (isLast ? ' stop-dot-active' : '') + '"></div>' + (ri < reversed.length - 1 ? '<div class="stop-line"></div>' : '') + '</div>'
+            + '<div class="seg-badge' + (isFirst ? ' seg-start' : s.ferry ? ' seg-ferry' : '') + '">' + modeIcon + ' ' + segKm + '</div>'
+            + '<div class="stop-body"><div class="stop-name">' + s.name + '</div><div class="stop-meta">' + fmtDate(s.date) + cumLabel + (s.note ? ' · ' + s.note : '') + '</div></div>'
+            + '<div class="stop-actions">' + editBtns + '</div></div>';
+        }).join('');
     }
-
-    // ── Reihenfolge ändern: verschiebt Stop um +1/-1 in der chronologischen Liste ─
-    window.moveStop = async function(stopId, direction) {
-        const data = window._tripData;
-        if (!data)
-            return;
-        const stops = getSortedStops(data.stops || []);
-        const idx = stops.findIndex(s => s.id === stopId);
-        if (idx < 0)
-            return;
-        const newIdx = idx + direction;
-        if (newIdx < 0 || newIdx >= stops.length)
-            return;
-
-        // Swap dates between the two stops so sort order changes
-        const a = stops[idx],
-            b = stops[newIdx];
-        const dateA = a.date,
-            dateB = b.date;
-
-        // If same date, use timestamp suffix trick: swap ids' timestamps is not clean,
-        // so we just swap the date fields
-        if (dateA === dateB) {
-            showToast('Gleiches Datum – ändere erst das Datum im ✏️ Edit');
-            return;
-        }
-
-        const aUpdated = {
-            ...a,
-            date: dateB
-        };
-        const bUpdated = {
-            ...b,
-            date: dateA
-        };
-
-        try {
-            await updateDoc(doc(db, 'trips', tripCode), {
-                stops: arrayRemove(a)
-            });
-            await updateDoc(doc(db, 'trips', tripCode), {
-                stops: arrayRemove(b)
-            });
-            await updateDoc(doc(db, 'trips', tripCode), {
-                stops: arrayUnion(aUpdated)
-            });
-            await updateDoc(doc(db, 'trips', tripCode), {
-                stops: arrayUnion(bUpdated)
-            });
-        } catch (err) {
-            showToast('Fehler: ' + err.message);
-        }
-    };
 
     function fillSettings(data) {
         if (!data)
@@ -3470,9 +3658,66 @@ ${
         document.getElementById('cfg-total').value = data.total;
         document.getElementById('cfg-start').value = data.start;
         document.getElementById('cfg-end').value = data.end;
-        const d = calcDayBudget(data.total, data.start, data.end);
-        document.getElementById('cfg-daily-display').textContent = '€' + d.toFixed(2) + ' / Tag (automatisch)';
+        document.getElementById('cfg-daily-display').textContent = '€' + calcDayBudget(data.total, data.start, data.end).toFixed(2) + ' / Tag (automatisch)';
+        // Show/hide archive button
+        const ab = document.getElementById('archive-trip-btn');
+        if (ab)
+            ab.style.display = isArchived ? 'none' : 'block';
     }
+
+    // ── EXPORTS ─────────────────────────────────────────────────────────
+    window.exportCSV = function() {
+        const data = window._tripData;
+        if (!data || !data.expenses?.length) {
+            showToast('Keine Ausgaben zum Exportieren');
+            return;
+        }
+        const rows = [['Datum', 'Kategorie', 'Beschreibung', 'Betrag (Original)', 'Währung', 'Betrag (EUR)', 'Hinzugefügt von']];
+        [...data.expenses].sort((a, b) => a.date.localeCompare(b.date)).forEach(e => {
+            rows.push([e.date, getCat(e.catId).name, e.desc, e.amount, e.currency || 'EUR', (e.amountEUR ?? e.amount ?? 0).toFixed(2), e.addedBy || '']);
+        });
+        const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+        downloadBlob(new Blob(['\uFEFF' + csv], {
+            type: 'text/csv;charset=utf-8;'
+        }), 'budgio-ausgaben-' + (data.name || '').replace(/\s/g, '_') + '.csv');
+        showToast('📥 Ausgaben CSV exportiert');
+    };
+    window.exportRouteCSV = function() {
+        const data = window._tripData;
+        const stops = getSortedStops(data?.stops || []);
+        if (!stops.length) {
+            showToast('Keine Stationen');
+            return;
+        }
+        const rows = [['Station', 'Datum', 'Etappe km', 'Gesamt km', 'Fähre', 'Notiz', 'Lat', 'Lng']];
+        let cumKm = 0;
+        stops.forEach((s, i) => {
+            cumKm += s.km || 0;
+            rows.push([s.name, s.date, i === 0 ? '–' : (s.km || 0), i === 0 ? 0 : cumKm, s.ferry ? 'Ja' : 'Nein', s.note || '', s.lat.toFixed(6), s.lng.toFixed(6)]);
+        });
+        const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+        downloadBlob(new Blob(['\uFEFF' + csv], {
+            type: 'text/csv;charset=utf-8;'
+        }), 'budgio-route-' + (data.name || '').replace(/\s/g, '_') + '.csv');
+        showToast('📥 Route CSV exportiert');
+    };
+    window.exportRouteGPX = function() {
+        const data = window._tripData;
+        const stops = getSortedStops(data?.stops || []);
+        if (!stops.length) {
+            showToast('Keine Stationen');
+            return;
+        }
+        const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const tripName = esc(data?.name || 'Budgio Route');
+        const wpts = stops.map(s => `  <wpt lat="${s.lat.toFixed(6)}" lon="${s.lng.toFixed(6)}">\n    <name>${esc(s.name)}</name>\n    <desc>${esc(s.note)}</desc>\n    <time>${s.date}T12:00:00Z</time>\n  </wpt>`).join('\n');
+        const trkpts = stops.map(s => `      <trkpt lat="${s.lat.toFixed(6)}" lon="${s.lng.toFixed(6)}">\n        <time>${s.date}T12:00:00Z</time>\n      </trkpt>`).join('\n');
+        const gpx = `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Budgio" xmlns="http://www.topografix.com/GPX/1/1">\n  <metadata><name>${tripName}</name><time>${new Date().toISOString()}</time></metadata>\n${wpts}\n  <trk><name>${tripName}</name><trkseg>\n${trkpts}\n  </trkseg></trk>\n</gpx>`;
+        downloadBlob(new Blob([gpx], {
+            type: 'application/gpx+xml'
+        }), 'budgio-route-' + (data.name || '').replace(/\s/g, '_') + '.gpx');
+        showToast('📍 Route GPX exportiert');
+    };
     </script>
 </head>
 <body>
@@ -3500,9 +3745,9 @@ ${
                     <label class="form-lbl">Währung</label>
                     <select class="form-sel" id="edit-currency">
                         <option value="EUR">€ EUR</option>
-                        <option value="DKK">DKK</option>
-                        <option value="NOK">NOK</option>
-                        <option value="SEK">SEK</option>
+                        <option value="DKK">🇩🇰 DKK</option>
+                        <option value="NOK">🇳🇴 NOK</option>
+                        <option value="SEK">🇸🇪 SEK</option>
                     </select>
                 </div>
             </div>
@@ -3531,7 +3776,7 @@ ${
             </div>
             <div class="form-group">
                 <label class="form-lbl">Notiz (optional)</label>
-                <input class="form-inp" id="sedit-note" placeholder="z.B. Campingplatz Fjordblick"/>
+                <input class="form-inp" id="sedit-note"/>
             </div>
             <label class="ferry-toggle" style="margin-bottom:0">
                 <input type="checkbox" id="sedit-ferry"/>
@@ -3544,12 +3789,38 @@ ${
         </div>
     </div>
 
+    <!-- TRIP SWITCHER SHEET -->
+    <div class="sheet-overlay" id="trip-switcher" onclick="if(event.target===this)closeTripSwitcher()">
+        <div class="sheet">
+            <div class="sheet-title">
+                Reisen 
+                <button class="sheet-close" onclick="closeTripSwitcher()">✕</button>
+            </div>
+            <div id="switcher-content"></div>
+        </div>
+    </div>
+
     <!-- HOME -->
-    <div class="screen" id="screen-home">
-        <div class="logo">🌿 Budgio</div>
-        <div class="tagline">Dein Reisebegleiter für Skandinavien</div>
+    <div class="home-screen" id="home-screen">
+        <div class="home-header">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+                <div>
+                    <div class="home-logo">🌿 Budgio</div>
+                    <div class="home-sub">Dein Reisebegleiter</div>
+                </div>
+                <button class="icon-btn" id="theme-btn" onclick="toggleTheme()">☀️</button>
+            </div>
+        </div>
+        <div class="home-body" id="home-body"></div>
+    </div>
+
+    <!-- CREATE -->
+    <div class="screen" id="screen-create">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+            <button onclick="backToHome()" style="background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer">←</button>
+            <div class="logo" style="font-size:32px;margin-bottom:0">✈️ Neue Reise</div>
+        </div>
         <div class="screen-card">
-            <h2>✈️ Neue Reise erstellen</h2>
             <label class="s-lbl">Reisename</label>
             <input class="s-inp" id="s-name" placeholder="z.B. Skandinavien 2026"/>
             <label class="s-lbl">Gesamtbudget (€)</label>
@@ -3568,16 +3839,28 @@ ${
             <input class="s-inp" id="s-creator" placeholder="z.B. Papa"/>
             <label class="s-lbl">Reisende</label>
             <div class="person-tags" id="setup-persons"></div>
-            <div class="add-person-row" style="margin-bottom:4px">
+            <div class="add-person-row" style="margin-bottom:12px">
                 <input class="s-inp" id="s-pname" placeholder="Name" style="margin-bottom:0"/>
                 <input class="s-inp" id="s-pemoji" placeholder="😀" style="margin-bottom:0;width:54px;text-align:center" maxlength="2"/>
                 <button class="secondary-btn" onclick="addSetupPerson()">+</button>
             </div>
+            <label class="s-lbl">
+                Währungen 
+                <span style="opacity:.5;font-weight:400">(max. 5, EUR immer dabei)</span>
+            </label>
+            <div class="currency-picker" id="currency-picker-wrap"></div>
+            <div class="cur-hint" id="cur-hint"></div>
             <button class="primary-btn" id="btn-create" onclick="createTrip()">✈️ Reise erstellen</button>
         </div>
-        <div class="divider">— oder —</div>
+    </div>
+
+    <!-- JOIN -->
+    <div class="screen" id="screen-join">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+            <button onclick="backToHome()" style="background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer">←</button>
+            <div class="logo" style="font-size:32px;margin-bottom:0">🔑 Beitreten</div>
+        </div>
         <div class="screen-card">
-            <h2>🔑 Reise beitreten</h2>
             <label class="s-lbl">Reise-Code</label>
             <input class="s-inp" id="j-code" placeholder="z.B. SKAND926" style="letter-spacing:3px;font-family:'Fraunces',serif;font-size:20px;text-transform:uppercase"/>
             <label class="s-lbl">Dein Name</label>
@@ -3591,18 +3874,19 @@ ${
         <div class="topbar">
             <div class="topbar-row">
                 <div>
-                    <div class="trip-name" id="hdr-name">Mein Urlaub</div>
+                    <button class="trip-name-btn" id="hdr-name" onclick="openTripSwitcher()">Mein Urlaub</button>
                     <div class="trip-dates" id="hdr-dates"></div>
                 </div>
                 <div class="topbar-right">
-                    <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Farbschema">☀️</button>
+                    <button class="icon-btn" id="theme-btn" onclick="toggleTheme()">☀️</button>
                     <span id="conn-status" style="font-size:14px">🟡</span>
-                    <button class="icon-btn" id="reload-btn" onclick="reloadApp()" title="Neu laden">🔄</button>
-                    <button class="icon-btn" onclick="switchTab('settings')" title="Einstellungen">⚙️</button>
+                    <button class="icon-btn" id="reload-btn" onclick="reloadApp()">🔄</button>
+                    <button class="icon-btn" onclick="switchTab('settings')">⚙️</button>
                 </div>
             </div>
         </div>
-        <div class="offline-banner" id="offline-banner">🔴 Keine Verbindung – Änderungen werden gespeichert sobald du wieder online bist</div>
+        <div class="archived-banner" id="archived-banner">📦 Archivierte Reise – nur Lesezugriff</div>
+        <div class="offline-banner" id="offline-banner">🔴 Keine Verbindung</div>
         <div class="fx-strip" id="fx-bar">Kurse werden geladen…</div>
         <div class="nav">
             <button class="nav-btn active" onclick="switchTab('overview')">
@@ -3719,7 +4003,7 @@ ${
             <div class="card" style="padding:12px;margin-bottom:12px">
                 <div id="route-map"></div>
             </div>
-            <div class="stop-add-form">
+            <div class="stop-add-form" id="stop-add-form">
                 <div class="card-label" style="margin-bottom:10px">📍 Station hinzufügen</div>
                 <div style="display:flex;gap:8px;margin-bottom:8px;position:relative">
                     <div class="autocomplete-wrap">
@@ -3731,22 +4015,17 @@ ${
                 <input class="s-inp" id="stop-note" placeholder="Notiz (optional)"/>
                 <label class="ferry-toggle">
                     <input type="checkbox" id="stop-ferry"/>
-                    <span>⛴️ Diese Etappe per Fähre (Luftlinie statt Straßenroute)</span>
+                    <span>⛴️ Fähren-Etappe</span>
                 </label>
                 <button class="stop-add-btn" id="stop-add-btn" onclick="addStop()">Station hinzufügen</button>
             </div>
             <div class="card">
                 <div class="card-label">Streckenverlauf</div>
-                <div id="stop-list">
-                    <div class="empty">
-                        <div class="empty-icon">🗺️</div>
-                        <p>Noch keine Stationen eingetragen</p>
-                    </div>
-                </div>
+                <div id="stop-list"></div>
             </div>
         </div>
 
-        <!-- CASH -->
+        <!-- JETZT -->
         <div class="section" id="sec-today">
             <div class="card">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -3760,12 +4039,12 @@ ${
                     </div>
                 </div>
                 <div class="weather-strip" id="weather-strip">
-                    <div style="color:var(--text3);font-size:12px;padding:8px">GPS-Erlaubnis nötig – tippe 🔄 um Wetter zu laden</div>
+                    <div style="color:var(--text3);font-size:12px;padding:8px">GPS-Erlaubnis nötig – tippe 🔄</div>
                 </div>
                 <div style="margin-top:8px;display:flex;gap:16px;font-size:10px;color:var(--text3)">
-                    <span>🌡️ Temperatur</span>
-                    <span style="color:var(--blue)">💧 Regenwahrsch.</span>
-                    <span>💨 Wind km/h</span>
+                    <span>🌡️ Temp</span>
+                    <span style="color:var(--blue)">💧 Regen</span>
+                    <span>💨 Wind</span>
                 </div>
             </div>
             <div class="card">
@@ -3787,12 +4066,7 @@ ${
                 <div class="card-label">Währungsrechner</div>
                 <div style="display:flex;gap:8px;margin-bottom:10px">
                     <input id="conv-amount" type="number" inputmode="decimal" placeholder="0,00" style="flex:1;padding:10px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Fraunces',serif;font-size:17px;outline:none;-webkit-appearance:none;min-width:0;transition:border-color .15s" oninput="convertCurrency()" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'"/>
-                    <select id="conv-from" onchange="convertCurrency()" style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:14px;outline:none;-webkit-appearance:none;cursor:pointer;flex-shrink:0">
-                        <option value="DKK">🇩🇰 DKK</option>
-                        <option value="NOK">🇳🇴 NOK</option>
-                        <option value="SEK">🇸🇪 SEK</option>
-                        <option value="EUR">€ EUR</option>
-                    </select>
+                    <select id="conv-from" onchange="convertCurrency()" style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:14px;outline:none;-webkit-appearance:none;cursor:pointer;flex-shrink:0"></select>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
                     <div style="flex:1;height:1px;background:var(--border)"></div>
@@ -3800,15 +4074,8 @@ ${
                     <div style="flex:1;height:1px;background:var(--border)"></div>
                 </div>
                 <div style="display:flex;gap:8px;margin-bottom:8px">
-                    <div id="conv-result" style="flex:1;padding:10px 13px;background:var(--surface2);border-radius:var(--r-sm);font-family:'Fraunces',serif;font-size:17px;font-weight:700;color:var(--green);min-height:44px;display:flex;align-items:center;min-width:0">
-                              –
-                            </div>
-                    <select id="conv-to" onchange="convertCurrency()" style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:14px;outline:none;-webkit-appearance:none;cursor:pointer;flex-shrink:0">
-                        <option value="EUR">€ EUR</option>
-                        <option value="DKK">🇩🇰 DKK</option>
-                        <option value="NOK">🇳🇴 NOK</option>
-                        <option value="SEK">🇸🇪 SEK</option>
-                    </select>
+                    <div id="conv-result" style="flex:1;padding:10px 13px;background:var(--surface2);border-radius:var(--r-sm);font-family:'Fraunces',serif;font-size:17px;font-weight:700;color:var(--green);min-height:44px;display:flex;align-items:center;min-width:0">–</div>
+                    <select id="conv-to" onchange="convertCurrency()" style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:14px;outline:none;-webkit-appearance:none;cursor:pointer;flex-shrink:0"></select>
                 </div>
                 <div id="conv-rate-hint" style="font-size:11px;color:var(--text3);text-align:center"></div>
             </div>
@@ -3846,7 +4113,7 @@ ${
                     <span style="line-height:38px;color:var(--text3);font-size:13px">–</span>
                     <input id="filter-to" type="date" onchange="applyFilter()" style="flex:1;padding:9px 11px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:13px;outline:none;-webkit-appearance:none"/>
                 </div>
-                <div id="filter-summary" style="display:none;background:var(--surface2);border-radius:var(--r-sm);padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
+                <div id="filter-summary" style="display:none;background:var(--surface2);border-radius:var(--r-sm);padding:10px 14px;justify-content:space-between;align-items:center">
                     <span id="filter-count" style="font-size:12px;color:var(--text2)"></span>
                     <span id="filter-total" style="font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--green)"></span>
                 </div>
@@ -3874,7 +4141,7 @@ ${
                     </div>
                     <button class="copy-btn" onclick="copyCode()">📋 Kopieren</button>
                 </div>
-                <p style="font-size:12px;color:var(--text2)">Teile diesen Code mit deiner Familie – alle sehen alles in Echtzeit.</p>
+                <p style="font-size:12px;color:var(--text2)">Teile diesen Code – alle sehen alles in Echtzeit.</p>
             </div>
             <div class="card">
                 <div class="card-label">Reise bearbeiten</div>
@@ -3905,27 +4172,12 @@ ${
                     📍 Route als GPX 
                     <span style="font-size:10px;opacity:.6">(Google Maps, Komoot…)</span>
                 </button>
-                <button class="danger-btn" onclick="leaveTrip()">Reise verlassen</button>
+                <button class="archive-btn" id="archive-trip-btn" onclick="archiveTrip()">📦 Reise archivieren</button>
+                <button class="danger-btn" onclick="leaveTrip()">← Zur Reiseübersicht</button>
             </div>
             <div class="card">
                 <div class="card-label">Wechselkurse</div>
-                <div style="font-size:13px;color:var(--text2);line-height:2.2">
-                    <div>
-                        🇩🇰 1 € = 
-                        <b id="fx-dkk" style="color:var(--text)">–</b>
-                         DKK
-                    </div>
-                    <div>
-                        🇳🇴 1 € = 
-                        <b id="fx-nok" style="color:var(--text)">–</b>
-                         NOK
-                    </div>
-                    <div>
-                        🇸🇪 1 € = 
-                        <b id="fx-sek" style="color:var(--text)">–</b>
-                         SEK
-                    </div>
-                </div>
+                <div style="font-size:13px;color:var(--text2);line-height:2.2" id="settings-fx-list"></div>
             </div>
         </div>
     </div>
@@ -3942,15 +4194,93 @@ ${
         <div class="qa-row2">
             <input class="qa-input" id="qa-desc" placeholder="Beschreibung (optional)"/>
             <input class="qa-input qa-amt" id="qa-amt" type="number" placeholder="0,00" inputmode="decimal" step="0.01"/>
-            <select class="qa-select qa-cur" id="qa-currency">
-                <option value="EUR">€ EUR</option>
-                <option value="DKK">DKK</option>
-                <option value="NOK">NOK</option>
-                <option value="SEK">SEK</option>
-            </select>
+            <select class="qa-select qa-cur" id="qa-currency"></select>
             <button class="qa-add-btn" id="qa-add-btn" onclick="addExpense()">＋</button>
             <button class="qa-cancel-btn" id="qa-cancel-btn" onclick="cancelEdit()">✕</button>
         </div>
     </div>
+
+    <script>
+    // Populate QA currency select from trip currencies
+    function buildQACurrency() {
+        const data = window._tripData;
+        const curs = data?.currencies || ['EUR', 'DKK', 'NOK', 'SEK'];
+        const ALL = [{
+            code: 'EUR',
+            flag: '🇪🇺'
+        }, {
+            code: 'DKK',
+            flag: '🇩🇰'
+        }, {
+            code: 'NOK',
+            flag: '🇳🇴'
+        }, {
+            code: 'SEK',
+            flag: '🇸🇪'
+        }, {
+            code: 'GBP',
+            flag: '🇬🇧'
+        }, {
+            code: 'CHF',
+            flag: '🇨🇭'
+        }, {
+            code: 'USD',
+            flag: '🇺🇸'
+        }, {
+            code: 'PLN',
+            flag: '🇵🇱'
+        }, {
+            code: 'CZK',
+            flag: '🇨🇿'
+        }, {
+            code: 'HUF',
+            flag: '🇭🇺'
+        }, {
+            code: 'HRK',
+            flag: '🇭🇷'
+        }, {
+            code: 'ISK',
+            flag: '🇮🇸'
+        }];
+        const sel = document.getElementById('qa-currency');
+        if (sel)
+            sel.innerHTML = curs.map(c => {
+                const ci = ALL.find(x => x.code === c) || {
+                    code: c,
+                    flag: '💱'
+                };
+                return `<option value="${c}">${ci.flag} ${c}</option>`;
+            }).join('');
+        // Also fill expense edit modal currency
+        const editSel = document.getElementById('edit-currency');
+        if (editSel)
+            editSel.innerHTML = curs.map(c => {
+                const ci = ALL.find(x => x.code === c) || {
+                    code: c,
+                    flag: '💱'
+                };
+                return `<option value="${c}">${ci.flag} ${ci.code}</option>`;
+            }).join('');
+        // Settings FX list
+        const sfx = document.getElementById('settings-fx-list');
+        if (sfx)
+            sfx.innerHTML = curs.filter(c => c !== 'EUR').map(c => `<div>${['🇩🇰', '🇳🇴', '🇸🇪', '🇬🇧', '🇨🇭', '🇺🇸', '🇵🇱', '🇨🇿', '🇭🇺', '🇭🇷', '🇮🇸'][['DKK', 'NOK', 'SEK', 'GBP', 'CHF', 'USD', 'PLN', 'CZK', 'HUF', 'HRK', 'ISK'].indexOf(c)] || '💱'} 1 € = <b style="color:var(--text)">${window.FX?.[c]?.toFixed(2) || '–'}</b> ${c}</div>`).join('');
+    }
+    // Hook into render
+    const _origRender = window.render;
+    window.addEventListener('budgio-render', buildQACurrency);
+    // Call after Firebase data loads
+    const _body = document.body;
+    const _ob = new MutationObserver(() => {
+        if (window._tripData) {
+            buildQACurrency();
+            _ob.disconnect();
+        }
+    });
+    _ob.observe(_body, {
+        childList: true,
+        subtree: true
+    });
+    </script>
 </body>
 </html>
