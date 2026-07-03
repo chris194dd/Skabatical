@@ -2862,16 +2862,93 @@
         const blob = new Blob(['\uFEFF' + csv], {
             type: 'text/csv;charset=utf-8;'
         });
+        downloadBlob(blob, 'budgio-ausgaben-' + (data.name || '').replace(/\s/g, '_') + '.csv');
+        showToast('📥 Ausgaben CSV exportiert');
+    };
+
+    window.exportRouteCSV = function() {
+        const data = window._tripData;
+        const stops = getSortedStops(data?.stops || []);
+        if (!stops.length) {
+            showToast('Keine Stationen zum Exportieren');
+            return;
+        }
+        const rows = [['Station', 'Datum', 'Etappe km', 'Gesamt km', 'Fähre', 'Notiz', 'Breitengrad', 'Längengrad']];
+        let cumKm = 0;
+        stops.forEach((s, i) => {
+            cumKm += s.km || 0;
+            rows.push([
+            s.name, s.date,
+            i === 0 ? '–' : (s.km || 0),
+            i === 0 ? 0 : cumKm,
+            s.ferry ? 'Ja' : 'Nein',
+            s.note || '',
+            s.lat.toFixed(6), s.lng.toFixed(6)
+            ]);
+        });
+        const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+        const blob = new Blob(['\uFEFF' + csv], {
+            type: 'text/csv;charset=utf-8;'
+        });
+        downloadBlob(blob, 'budgio-route-' + (data.name || '').replace(/\s/g, '_') + '.csv');
+        showToast('📥 Route CSV exportiert');
+    };
+
+    window.exportRouteGPX = function() {
+        const data = window._tripData;
+        const stops = getSortedStops(data?.stops || []);
+        if (!stops.length) {
+            showToast('Keine Stationen zum Exportieren');
+            return;
+        }
+        const tripName = (data?.name || 'Budgio Route').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const wpts = stops.map(s => {
+            const name = (s.name || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const desc = (s.note || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return `  <wpt lat="${s.lat.toFixed(6)}" lon="${s.lng.toFixed(6)}">\n    <name>${name}</name>\n    <desc>${desc}</desc>\n    <time>${s.date}T12:00:00Z</time>\n  </wpt>`;
+        }).join('\n');
+        const trkpts = stops.map(s =>
+        `      <trkpt lat="${s.lat.toFixed(6)}" lon="${s.lng.toFixed(6)}">\n        <time>${s.date}T12:00:00Z</time>\n      </trkpt>`
+        ).join('\n');
+        const gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Budgio" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>${
+
+        tripName}</name>
+    <time>${new Date().toISOString()}</time>
+  </metadata>
+${
+        wpts}
+  <trk>
+    <name>${
+        tripName}</name>
+    <trkseg>
+${
+        trkpts}
+    </trkseg>
+  </trk>
+</gpx>`
+
+
+        ;
+        const blob = new Blob([gpx], {
+            type: 'application/gpx+xml'
+        });
+        downloadBlob(blob, 'budgio-route-' + (data.name || '').replace(/\s/g, '_') + '.gpx');
+        showToast('📍 Route GPX exportiert');
+    };
+
+    function downloadBlob(blob, filename) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'budgio-ausgaben-' + data.name.replace(/\s/g, '_') + '.csv';
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        showToast('CSV exportiert');
-    };
+    }
 
     // ── Settings ──────────────────────────────────────────────────────
     window.saveSettings = async function() {
@@ -3821,7 +3898,13 @@
                 </div>
                 <div class="daily-display" id="cfg-daily-display">Tagesbudget wird automatisch berechnet</div>
                 <button class="save-btn" onclick="saveSettings()">Änderungen speichern</button>
-                <button class="export-btn" onclick="exportCSV()">📥 Ausgaben als CSV exportieren</button>
+                <div style="margin-top:12px;margin-bottom:4px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)">Export</div>
+                <button class="export-btn" onclick="exportCSV()" style="margin-top:0">📥 Ausgaben als CSV</button>
+                <button class="export-btn" onclick="exportRouteCSV()" style="margin-top:7px">🗺️ Route als CSV</button>
+                <button class="export-btn" onclick="exportRouteGPX()" style="margin-top:7px">
+                    📍 Route als GPX 
+                    <span style="font-size:10px;opacity:.6">(Google Maps, Komoot…)</span>
+                </button>
                 <button class="danger-btn" onclick="leaveTrip()">Reise verlassen</button>
             </div>
             <div class="card">
