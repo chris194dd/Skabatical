@@ -2782,7 +2782,7 @@
         const desc = document.getElementById('qa-desc').value.trim();
         const amt = parseFloat(document.getElementById('qa-amt').value);
         const currency = document.getElementById('qa-currency').value;
-        if (!amt || amt <= 0) {
+        if (!amt || isNaN(amt) || amt === 0) {
             document.getElementById('qa-amt').focus();
             return;
         }
@@ -2846,7 +2846,7 @@
         const amt = parseFloat(document.getElementById('edit-amt').value);
         const currency = document.getElementById('edit-currency').value;
         const date = document.getElementById('edit-date').value;
-        if (!amt || amt <= 0 || !date) {
+        if (!amt || isNaN(amt) || amt === 0 || !date) {
             showToast('Betrag und Datum ausfüllen');
             return;
         }
@@ -3739,7 +3739,7 @@
             <div class="form-2col">
                 <div>
                     <label class="form-lbl">Betrag</label>
-                    <input class="form-inp" id="edit-amt" type="number" inputmode="decimal" step="0.01"/>
+                    <input class="form-inp" id="edit-amt" type="number" inputmode="text" step="0.01"/>
                 </div>
                 <div>
                     <label class="form-lbl">Währung</label>
@@ -4193,7 +4193,7 @@
         </div>
         <div class="qa-row2">
             <input class="qa-input" id="qa-desc" placeholder="Beschreibung (optional)"/>
-            <input class="qa-input qa-amt" id="qa-amt" type="number" placeholder="0,00" inputmode="decimal" step="0.01"/>
+            <input class="qa-input qa-amt" id="qa-amt" type="number" placeholder="0,00" inputmode="text" step="0.01"/>
             <select class="qa-select qa-cur" id="qa-currency"></select>
             <button class="qa-add-btn" id="qa-add-btn" onclick="addExpense()">＋</button>
             <button class="qa-cancel-btn" id="qa-cancel-btn" onclick="cancelEdit()">✕</button>
