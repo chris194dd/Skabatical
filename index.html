@@ -2770,6 +2770,11 @@
     };
 
     // ── AUSGABEN ────────────────────────────────────────────────────────
+    // Parse amount from text field: accepts both . and , as decimal separator, allows minus
+    function parseAmt(val) {
+        return parseFloat(String(val).replace(',', '.'));
+    }
+
     window.addExpense = async function() {
         if (isArchived) {
             showToast('Archivierte Reise – nur Lesezugriff');
@@ -2780,9 +2785,9 @@
             return;
         const catId = document.getElementById('qa-cat').value;
         const desc = document.getElementById('qa-desc').value.trim();
-        const amt = parseFloat(document.getElementById('qa-amt').value);
+        const amt = parseAmt(document.getElementById('qa-amt').value);
         const currency = document.getElementById('qa-currency').value;
-        if (!amt || isNaN(amt) || amt === 0) {
+        if (isNaN(amt) || amt === 0) {
             document.getElementById('qa-amt').focus();
             return;
         }
@@ -2843,7 +2848,7 @@
             return;
         const catId = document.getElementById('edit-cat').value;
         const desc = document.getElementById('edit-desc').value.trim();
-        const amt = parseFloat(document.getElementById('edit-amt').value);
+        const amt = parseAmt(document.getElementById('edit-amt').value);
         const currency = document.getElementById('edit-currency').value;
         const date = document.getElementById('edit-date').value;
         if (!amt || isNaN(amt) || amt === 0 || !date) {
@@ -3739,7 +3744,7 @@
             <div class="form-2col">
                 <div>
                     <label class="form-lbl">Betrag</label>
-                    <input class="form-inp" id="edit-amt" type="number" inputmode="text" step="0.01"/>
+                    <input class="form-inp" id="edit-amt" type="text" inputmode="decimal" placeholder="0,00"/>
                 </div>
                 <div>
                     <label class="form-lbl">Währung</label>
@@ -4193,7 +4198,7 @@
         </div>
         <div class="qa-row2">
             <input class="qa-input" id="qa-desc" placeholder="Beschreibung (optional)"/>
-            <input class="qa-input qa-amt" id="qa-amt" type="number" placeholder="0,00" inputmode="text" step="0.01"/>
+            <input class="qa-input qa-amt" id="qa-amt" type="text" placeholder="0,00" inputmode="decimal"/>
             <select class="qa-select qa-cur" id="qa-currency"></select>
             <button class="qa-add-btn" id="qa-add-btn" onclick="addExpense()">＋</button>
             <button class="qa-cancel-btn" id="qa-cancel-btn" onclick="cancelEdit()">✕</button>
